@@ -34,6 +34,7 @@ using MySqlConnector;
 using System;
 using System.Collections.Generic;
 using System.Data;
+using System.Xml.Linq;
 
 namespace Crystal.POLProfile
 {
@@ -1760,6 +1761,43 @@ namespace Crystal.POLProfile
             }
 
             return profHeader;
+        }
+
+        public static SearchPolIdResult GetPolIdFromCharacter(ulong contentId, uint contentSubId, ushort contentClass)
+        {
+            using (MySqlConnection conn = new($"Server={DB_HOST}; Port={DB_PORT}; Database={DB_NAME}; UID={DB_USERNAME}; Password={DB_PASSWORD}"))
+            {
+                try
+                {
+                    string query = @"
+                        SELECT polId, handleNum, handleName FROM character_primitives
+                        WHERE contentId = @contentId AND contentSubId = @contentSubId AND contentClass = @contentClass
+                        ";
+                    MySqlCommand cmd = new(query, conn);
+                    cmd.Parameters.AddWithValue("@contentId", contentId);
+                    cmd.Parameters.AddWithValue("@contentSubId", contentSubId);
+                    cmd.Parameters.AddWithValue("@contentClass", contentClass);
+
+                    conn.Open();
+                    using MySqlDataReader reader = cmd.ExecuteReader();
+                    while (reader.Read())
+                    {
+                        string polProData = reader.GetString("polId");
+                        return new()
+                        {
+                            Found = 1,
+                            PolId = SqCrypto.PolProDataToPolId(polProData, 0, 0),
+                            HandleNum = reader.GetByte("handleNum"),
+                            Name = reader.GetString("handleName"),
+                        };
+                    }
+                }
+                catch (MySqlException e)
+                {
+                    Program.Log.Error(e.ToString());
+                }
+            }
+            return new();
         }
         #endregion
     }
