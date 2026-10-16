@@ -28,13 +28,11 @@ using Crystal.POLProfile.DataObjects.Pol.Friend;
 using Crystal.POLProfile.DataObjects.Pol.Group;
 using Crystal.POLProfile.DataObjects.Pol.Handle;
 using Crystal.POLProfile.DataObjects.Pol.Status;
-using Crystal.POLProfile.Packets.Receive;
 using Crystal.POLProfile.PolDb;
 using MySqlConnector;
 using System;
 using System.Collections.Generic;
 using System.Data;
-using System.Xml.Linq;
 
 namespace Crystal.POLProfile
 {
