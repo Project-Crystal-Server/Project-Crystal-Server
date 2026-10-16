@@ -170,9 +170,8 @@ namespace Crystal.POLProfile
         private void SearchPolId(Client client, byte[] recvObj)
         {
             SearchPolIdRequest request = MemoryMarshal.Cast<byte, SearchPolIdRequest>(recvObj)[0];
-            Program.Log.Info($"{client.GetPolProData()} is getting POLID for content id {request.ContentId}.");
-
-            SearchPolIdResult result = Database.GetPolIdFromCharacter(request.ContentId, request.ContentSubUserId, request.ContentClass);
+            Program.Log.Info($"{client.GetPolProData()} is getting POLID for content id {request.ContentSubUserId}.");
+            SearchPolIdResult result = Database.GetPolIdFromCharacter(request.ContentSubUserId, request.ContentClass);
             Span<byte> responseObj = new byte[SearchPolIdResult.SIZE];
             MemoryMarshal.Write(responseObj, in result);
             client.SendAnswer(responseObj.ToArray());

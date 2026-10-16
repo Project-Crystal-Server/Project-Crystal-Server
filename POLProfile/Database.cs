@@ -1763,18 +1763,17 @@ namespace Crystal.POLProfile
             return profHeader;
         }
 
-        public static SearchPolIdResult GetPolIdFromCharacter(ulong contentId, uint contentSubId, ushort contentClass)
+        public static SearchPolIdResult GetPolIdFromCharacter(uint contentSubId, ushort contentClass)
         {
             using (MySqlConnection conn = new($"Server={DB_HOST}; Port={DB_PORT}; Database={DB_NAME}; UID={DB_USERNAME}; Password={DB_PASSWORD}"))
             {
                 try
                 {
                     string query = @"
-                        SELECT polId, handleNum, handleName FROM character_primitives
-                        WHERE contentId = @contentId AND contentSubId = @contentSubId AND contentClass = @contentClass
+                        SELECT polId, handleId, handleNum, handleName FROM characters_primitives
+                        WHERE contentSubId = @contentSubId AND contentClass = @contentClass
                         ";
                     MySqlCommand cmd = new(query, conn);
-                    cmd.Parameters.AddWithValue("@contentId", contentId);
                     cmd.Parameters.AddWithValue("@contentSubId", contentSubId);
                     cmd.Parameters.AddWithValue("@contentClass", contentClass);
 
@@ -1787,6 +1786,7 @@ namespace Crystal.POLProfile
                         {
                             Found = 1,
                             PolId = SqCrypto.PolProDataToPolId(polProData, 0, 0),
+                            HandleId = (uint) reader.GetUInt64("handleId"),
                             HandleNum = reader.GetByte("handleNum"),
                             Name = reader.GetString("handleName"),
                         };

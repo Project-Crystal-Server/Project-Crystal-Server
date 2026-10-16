@@ -29,11 +29,12 @@ namespace Crystal.POLProfile.DataObjects.Pol.Character
     unsafe struct SearchPolIdResult
     {
         [FieldOffset(0x00)] public ulong PolId;
+        [FieldOffset(0x08)] public uint HandleId;
         [FieldOffset(0x10)] private fixed byte HandleNameBuff[0x10];
         [FieldOffset(0x20)] public byte Found;
         [FieldOffset(0x21)] public byte HandleNum;
 
-        public const int SIZE = 0x30;
+        public const int SIZE = 0x2C;
 
         public string Name
         {
