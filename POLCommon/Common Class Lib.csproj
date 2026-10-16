@@ -23,4 +23,9 @@
     <Folder Include="MiniGame\Packets\NewFolder\" />
   </ItemGroup>
 
+  <!-- SqCryptoKeys.Local.cs (gitignored) holds the real keys and replaces the placeholder file -->
+  <ItemGroup Condition="Exists('SqCryptoKeys.Local.cs')">
+    <Compile Remove="SqCryptoKeys.cs" />
+  </ItemGroup>
+
 </Project>

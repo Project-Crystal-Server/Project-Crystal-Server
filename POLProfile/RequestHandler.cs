@@ -28,7 +28,6 @@ using System.Security.Cryptography;
 using Crystal.POLProfile.DataObjects.Pol;
 using Crystal.POLProfile.Packets;
 using Crystal.POLProfile.DataObjects.Pol.Friend;
-using Crystal.POLProfile.Packets.Receive;
 using Crystal.POLProfile.DataObjects.Pol.Group;
 using System.Runtime.InteropServices;
 using Crystal.POLProfile.DataObjects.Pol.Handle;
@@ -40,6 +39,7 @@ using Crystal.POLProfile.DataObjects.Pol.Database;
 using System.Text;
 using Crystal.Common.Notification;
 using Crystal.POLProfile.PolDb;
+using Crystal.POLProfile.DataObjects.Pol.PolIdSearch;
 
 namespace Crystal.POLProfile
 {
@@ -57,7 +57,7 @@ namespace Crystal.POLProfile
             RequestHandlers[0x009] = LoadHandleList;
             RequestHandlers[0x103] = LoadCharacterList;
             RequestHandlers[0x10A] = StoreCharacterList;
-            RequestHandlers[0x10B] = SearchPolId;               // Unknown Request
+            RequestHandlers[0x10B] = SearchPolId;
             RequestHandlers[0x203] = LoadFriendList;
             RequestHandlers[0x206] = StoreFriendList;
             RequestHandlers[0x300] = ReadFile;
@@ -169,8 +169,12 @@ namespace Crystal.POLProfile
 
         private void SearchPolId(Client client, byte[] recvObj)
         {
-            // Never seen
-            throw new NotImplementedException();
+            SearchPolIdRequest request = MemoryMarshal.Cast<byte, SearchPolIdRequest>(recvObj)[0];
+            Program.Log.Info($"{client.GetPolProData()} is getting POLID for content id {request.ContentSubUserId}.");
+            SearchPolIdResult result = Database.GetPolIdFromCharacter(request.ContentSubUserId, request.ContentClass);
+            Span<byte> responseObj = new byte[SearchPolIdResult.SIZE];
+            MemoryMarshal.Write(responseObj, in result);
+            client.SendAnswer(responseObj.ToArray());
         }
 
         private void LoadFriendList(Client client, byte[] recvObj)

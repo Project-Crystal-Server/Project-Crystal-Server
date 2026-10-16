@@ -25,11 +25,9 @@ using Crypt.Org.BouncyCastle.Crypto.Encodings;
 using Crypt.Org.BouncyCastle.Crypto.Engines;
 using Crypt.Org.BouncyCastle.Crypto.Generators;
 using Crypt.Org.BouncyCastle.Crypto.Parameters;
-using Crypt.Org.BouncyCastle.Crypto.Prng;
 using Crypt.Org.BouncyCastle.Math;
 using Crypt.Org.BouncyCastle.Security;
 using System;
-using System.Collections;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Security.Cryptography;
@@ -37,13 +35,9 @@ using System.Text;
 
 namespace Crystal.Common
 {
-    public class SqCrypto
+    // Keys (POL_CRYPTKEY_*) live in SqCryptoKeys.cs / SqCryptoKeys.Local.cs
+    public partial class SqCrypto
     {
-		// Find these in polcore.dll
-        public const ulong POL_CRYPTKEY_MESSAGE = 0x0;
-        public const ulong POL_CRYPTKEY_CHAT = 0x0;
-        public const ulong POL_CRYPTKEY_PML = 0x0;
-
         private static readonly byte[] b32EncodeTable =
         {
             0x4e,0x34,0x33,0x4f, 0x56,0x48,0x42,0x4a, 0x31,0x59,0x32,0x43, 0x30,0x57,0x53,0x58,
@@ -757,7 +751,7 @@ namespace Crystal.Common
             authPassword[1] = 0;
 
             SqCrypto.SqFileEncryption fileEncryption = new();
-            fileEncryption.Init(0x0); // Find this in polcore.dll
+            fileEncryption.Init(POL_CRYPTKEY_CONTENTS_AUTH);
             fileEncryption.Encrypt(authPassword, 0x28);
 
             Array.Copy(authPassword, 0, authPassword, 4, 0x30);
@@ -798,7 +792,7 @@ namespace Crystal.Common
 
             // Decrypt
             SqFileEncryption sqDecryptFile = new(); 
-            sqDecryptFile.Init(0x0); // Find this in polcore.dll
+            sqDecryptFile.Init(POL_CRYPTKEY_CONTENTS_AUTH);
             sqDecryptFile.Decrypt(decrypted, 0x30);
 
             // Verify 2
