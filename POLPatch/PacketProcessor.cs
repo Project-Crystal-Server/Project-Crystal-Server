@@ -19,7 +19,6 @@ along with Project Crystal Server. If not, see <https://www.gnu.org/licenses/>.
 ===========================================================================
 */
 
-using Crystal.Common;
 using Crystal.POLPatch.Packets.Receive;
 using Crystal.POLPatch.Packets.Send;
 

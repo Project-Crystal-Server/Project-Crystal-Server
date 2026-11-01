@@ -12,11 +12,10 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="BouncyCastle.Cryptography" Version="2.6.2">
+    <PackageReference Include="BouncyCastle.Cryptography" Version="2.7.0">
       <Aliases>Crypt</Aliases>
     </PackageReference>
-    <PackageReference Include="NLog" Version="5.1.4" />
-    <PackageReference Include="System.Text.Encoding.CodePages" Version="8.0.0" />
+    <PackageReference Include="NLog" Version="6.2.2" />
   </ItemGroup>
 
   <ItemGroup>

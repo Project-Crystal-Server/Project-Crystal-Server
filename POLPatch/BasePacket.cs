@@ -20,12 +20,9 @@ along with Project Crystal Server. If not, see <https://www.gnu.org/licenses/>.
 */
 
 using System;
-using System.IO;
 using System.Runtime.InteropServices;
 using System.Security.Cryptography;
 using Crystal.Common;
-using NLog;
-using NLog.Targets;
 
 namespace Crystal.POLPatch
 {

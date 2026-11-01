@@ -70,7 +70,6 @@ namespace Crystal.POLProfile
             NotifierClient.StartNotifyLoop();
         }
 
-        #region Socket Handling
         public bool StartServer()
         {
             IPEndPoint serverEndPoint = new(IPAddress.Parse("0.0.0.0"), ServerPort);
@@ -122,6 +121,12 @@ namespace Crystal.POLProfile
             Program.Log.Info("Server has shutdown.");
         }
 
+        public string GetPathFromDomain(byte domain)
+        {
+            return DomainToPath[domain] ?? null;
+        }
+
+        #region Socket Handling
         private void AcceptCallback(IAsyncResult result)
         {
             // Try to accept the connection
@@ -332,11 +337,6 @@ namespace Crystal.POLProfile
                     ConnectionList.Remove(client);
                 }
             }
-        }
-
-        public string GetPathFromDomain(byte domain)
-        {
-            return DomainToPath[domain] ?? null;
         }
         #endregion
 

@@ -19,8 +19,6 @@ along with Project Crystal Server. If not, see <https://www.gnu.org/licenses/>.
 ===========================================================================
 */
 
-using System.Text;
-
 namespace Crystal.POLAuth.DataObjects.Irc
 {
     class IrcReplies

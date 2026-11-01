@@ -19,7 +19,6 @@ along with Project Crystal Server. If not, see <https://www.gnu.org/licenses/>.
 ===========================================================================
 */
 
-using Crystal.Common;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
@@ -48,7 +47,7 @@ namespace Crystal.POLAuth
 
             // Load NLog Config
             using var nlogStream = typeof(Program).Assembly.GetManifestResourceStream("Crystal.POLAuth.NLog.config");
-            using var nlogReader = System.Xml.XmlReader.Create(nlogStream);
+            using var nlogReader = new StreamReader(nlogStream);
             LogManager.Configuration = new NLog.Config.XmlLoggingConfiguration(nlogReader, null);
 
             // Sending command to polauth in service mode
