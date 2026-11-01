@@ -797,7 +797,6 @@ namespace Crystal.POLProfile
             List<PolBesColumnArgument> whereArgs = PolBesDb.ReadColumnArgument(searchRequest.WhereHeader.ContentClass, searchRequest.WhereHeader.NumColumns, recvObj.AsSpan()[DatabaseSearchAllRequest.SIZE..], out int _);
 
             Program.Log.Info($"{client.GetPolProData()} performing polbes search all for content class: {searchRequest.WhereHeader.ContentClass}.");
-            Program.Log.Info("\n\n" + Utils.ByteArrayToHex(recvObj));
 
             // Get request data from the DB
             byte[] result = PolBesDb.SearchPolBES(client.GetPolProData(), searchRequest.WhereHeader.ContentClass, whereArgs, out int numResults);
@@ -811,7 +810,7 @@ namespace Crystal.POLProfile
             int index = client.GetNextSearchIndex();
             if (numResults != 0)
             {
-                string searchResultPath = Path.Combine(".", "profile_data", "playonline", SqCrypto.PolIdToPolProData(client.GetPolProId()), "u", "s", $"select{index}");
+                string searchResultPath = Path.Combine(Server.GetPathFromDomain(0), SqCrypto.PolIdToPolProData(client.GetPolProId()), "u", "s", $"select{index}");
                 string directoryPath = Path.GetDirectoryName(searchResultPath);
                 Directory.CreateDirectory(directoryPath);
                 File.WriteAllBytes(searchResultPath, result);
