@@ -19,7 +19,6 @@ along with Project Crystal Server. If not, see <https://www.gnu.org/licenses/>.
 ===========================================================================
 */
 
-using Crystal.Common;
 using System;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;

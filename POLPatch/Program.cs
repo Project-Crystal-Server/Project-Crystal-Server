@@ -46,7 +46,7 @@ namespace Crystal.POLPatch
 
             // Load NLog Config
             using var nlogStream = typeof(Program).Assembly.GetManifestResourceStream("Crystal.POLPatch.NLog.config");
-            using var nlogReader = System.Xml.XmlReader.Create(nlogStream);
+            using var nlogReader = new StreamReader(nlogStream);
             LogManager.Configuration = new NLog.Config.XmlLoggingConfiguration(nlogReader, null);
 
             //Get Args

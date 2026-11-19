@@ -19,10 +19,8 @@ along with Project Crystal Server. If not, see <https://www.gnu.org/licenses/>.
 ===========================================================================
 */
 
-using NLog.Fluent;
 using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.Xml;
 
 namespace Crystal.POLPatch

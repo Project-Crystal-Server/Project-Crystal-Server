@@ -19,7 +19,6 @@ along with Project Crystal Server. If not, see <https://www.gnu.org/licenses/>.
 ===========================================================================
 */
 
-using Crystal.Common.MiniGame;
 using System;
 using System.Runtime.InteropServices;
 using System.Text;

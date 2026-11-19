@@ -24,7 +24,6 @@ using Crystal.POLAuth.DataObjects.Irc;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Xml.Linq;
 
 namespace Crystal.POLAuth
 {

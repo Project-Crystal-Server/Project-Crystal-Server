@@ -19,8 +19,6 @@ along with Project Crystal Server. If not, see <https://www.gnu.org/licenses/>.
 ===========================================================================
 */
 
-using Crystal.POLAuth.DataObjects.Irc;
-
 namespace Crystal.POLAuth.DataObjects.Irc.Modes.ChannelModes
 {
     class KeyChannelMode : ChannelMode

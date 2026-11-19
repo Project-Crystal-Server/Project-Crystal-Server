@@ -22,7 +22,6 @@ along with Project Crystal Server. If not, see <https://www.gnu.org/licenses/>.
 using Crystal.Common;
 using System;
 using System.IO;
-using System.Net;
 
 namespace Crystal.POLAuth.DataObjects
 {
