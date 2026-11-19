@@ -19,9 +19,6 @@ along with Project Crystal Server. If not, see <https://www.gnu.org/licenses/>.
 ===========================================================================
 */
 
-using Crystal.POLAuth.DataObjects.Irc;
-using Crystal.POLAuth.DataObjects.Irc.Modes;
-
 namespace Crystal.POLAuth.DataObjects.Irc.Modes.UserModes
 {
     class InvisibleUserMode : UserMode
