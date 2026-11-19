@@ -220,7 +220,7 @@ namespace Crystal.POLPatch
                         Program.Log.Info($"Patch Server for contentId {server.ApplicationId} has stopped.");
                         Console.ForegroundColor = ConsoleColor.Gray;
                     }
-                    catch (ApplicationException e)
+                    catch (ApplicationException)
                     {
                         Console.ForegroundColor = ConsoleColor.DarkRed;
                         Program.Log.Error($"Patch Server for contentId {server.ApplicationId} had error stopping server.");

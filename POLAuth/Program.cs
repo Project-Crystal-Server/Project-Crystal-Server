@@ -228,7 +228,7 @@ namespace Crystal.POLAuth
                 {
                     Server.StopServer();
                 }
-                catch (Exception ex)
+                catch (Exception)
                 {
                 }
             }
