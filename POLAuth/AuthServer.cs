@@ -179,10 +179,9 @@ namespace Crystal.POLAuth
                             socketsToRemove.Add(s);
                     }
 
-                    socketList = new List<Socket>(IrcClients.Keys);
-                    errList = new List<Socket>(IrcClients.Keys);
-                    writeList = IrcClients.Where(kv => kv.Value.HasPendingOutbound)
-                                          .Select(kv => kv.Key).ToList();
+                    socketList = [.. IrcClients.Keys];
+                    errList = [.. IrcClients.Keys];
+                    writeList = [.. IrcClients.Where(kv => kv.Value.HasPendingOutbound).Select(kv => kv.Key)];
                 }
 
                 if (socketList.Count == 0 && writeList.Count == 0)
@@ -256,7 +255,6 @@ namespace Crystal.POLAuth
                                 }
                                 else if (!client.GetIsBot())
                                 {
-                                    // Checksum failure is unrecoverable corruption, unlike a rejected command
                                     Program.Log.Info($"Received invalid checksum from {client}, kicking them.");
                                     client.Disconnect();
                                     socketsToRemove.Add(s);

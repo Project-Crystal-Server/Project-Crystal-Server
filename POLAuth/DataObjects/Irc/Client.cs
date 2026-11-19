@@ -32,8 +32,7 @@ namespace Crystal.POLAuth.DataObjects.Irc
 {
     public class Client
     {
-        //Connection
-        private const int SEND_TIMEOUT_MS = 10000;
+        // Connection
         private readonly Socket ClientSocket;
         public readonly byte[] RecvBuffer = new byte[16384];
         public int LastPartialSize = 0;
@@ -42,17 +41,18 @@ namespace Crystal.POLAuth.DataObjects.Irc
         private bool Disconnected = false;
         private uint LoginTime;
 
+        // Send Queue
         private readonly ConcurrentQueue<byte[]> SendQueue = new();
         private byte[] SendBuffer;
         private int SendOffset;
         public bool HasPendingOutbound => SendBuffer != null || !SendQueue.IsEmpty;
 
-        //Crypto
+        // Crypto
         private byte[] CurrentPublicRsaKey;
         private SqCrypto CurrentCrypto; // Initialized with a "USER" command.
         private string InitInfoBase32; // Used to generate password MD5
 
-        //Irc Related
+        // Irc Related
         private AuthServer Server;
         public readonly UserModeList Modes;
         private string UserName; // Always "x"
@@ -67,7 +67,7 @@ namespace Crystal.POLAuth.DataObjects.Irc
             Modes = new UserModeList(server);
 
             ClientSocket = socket;
-            ClientSocket.SendTimeout = SEND_TIMEOUT_MS;
+            ClientSocket.SendTimeout = 5000;
             ClientSocket.Blocking = false;
             IPEndPoint endpoint = socket.RemoteEndPoint as IPEndPoint;
             ClientIp = endpoint.Address;
