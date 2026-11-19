@@ -21,10 +21,12 @@ along with Project Crystal Server. If not, see <https://www.gnu.org/licenses/>.
 
 using Crystal.Common;
 using System;
+using System.Collections.Concurrent;
 using System.Linq;
 using System.Net;
 using System.Net.Sockets;
 using System.Text;
+using System.Threading;
 
 namespace Crystal.POLAuth.DataObjects.Irc
 {
@@ -33,12 +35,17 @@ namespace Crystal.POLAuth.DataObjects.Irc
         //Connection
         private const int SEND_TIMEOUT_MS = 10000;
         private readonly Socket ClientSocket;
-        public readonly byte[] RecvBuffer = new byte[2048];
+        public readonly byte[] RecvBuffer = new byte[16384];
         public int LastPartialSize = 0;
         private readonly IPAddress ClientIp;
         private readonly int ClientPort;
         private bool Disconnected = false;
         private uint LoginTime;
+
+        private readonly ConcurrentQueue<byte[]> SendQueue = new();
+        private byte[] SendBuffer;
+        private int SendOffset;
+        public bool HasPendingOutbound => SendBuffer != null || !SendQueue.IsEmpty;
 
         //Crypto
         private byte[] CurrentPublicRsaKey;
@@ -61,6 +68,7 @@ namespace Crystal.POLAuth.DataObjects.Irc
 
             ClientSocket = socket;
             ClientSocket.SendTimeout = SEND_TIMEOUT_MS;
+            ClientSocket.Blocking = false;
             IPEndPoint endpoint = socket.RemoteEndPoint as IPEndPoint;
             ClientIp = endpoint.Address;
             ClientPort = endpoint.Port;
@@ -112,6 +120,7 @@ namespace Crystal.POLAuth.DataObjects.Irc
         {
             try
             {
+                FlushPendingBestEffort();   // get KILL / "Closing Link" out before the socket dies
                 ClientSocket.Shutdown(SocketShutdown.Both);
                 ClientSocket.Disconnect(false);
             }
@@ -259,14 +268,48 @@ namespace Crystal.POLAuth.DataObjects.Irc
             if (encryptMessage && CurrentCrypto != null)
                 CurrentCrypto.SqCrypt64(result, result.Length, 1);
 
-            try 
+            SendQueue.Enqueue(result);
+        }
+
+        // Returns true if the socket errored and the caller should remove the client.
+        public bool FlushSendQueue()
+        {
+            try
             {
-                ClientSocket.Send(result);
-            } 
-            catch (SocketException)
-            {
-                Disconnect();
+                while (true)
+                {
+                    if (SendBuffer == null)
+                    {
+                        if (!SendQueue.TryDequeue(out SendBuffer)) return false;
+                        SendOffset = 0;
+                    }
+
+                    int sent = ClientSocket.Send(SendBuffer, SendOffset,
+                        SendBuffer.Length - SendOffset, SocketFlags.None, out SocketError err);
+
+                    if (err == SocketError.WouldBlock) return false;   // buffer full, not an error
+                    if (err != SocketError.Success)   return true;
+
+                    SendOffset += sent;
+                    if (SendOffset >= SendBuffer.Length) SendBuffer = null;
+                }
             }
+            catch (SocketException) { return true; }
+            catch (ObjectDisposedException) { return true; }
+        }
+
+        private void FlushPendingBestEffort(int budgetMs = 200)
+        {
+            var sw = System.Diagnostics.Stopwatch.StartNew();
+            try
+            {
+                while (HasPendingOutbound && sw.ElapsedMilliseconds < budgetMs)
+                {
+                    if (FlushSendQueue()) return;
+                    if (HasPendingOutbound) Thread.Sleep(5);
+                }
+            }
+            catch { }
         }
 
         public void NotifyOffline()

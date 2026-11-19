@@ -164,7 +164,10 @@ namespace Crystal.POLAuth
 
             while (IsAlive)
             {
+              try
+              {
                 List<Socket> socketList;
+                List<Socket> writeList;
                 List<Socket> errList;
 
                 //Poll the sockets for disconnects
@@ -172,15 +175,17 @@ namespace Crystal.POLAuth
                 {
                     foreach (Socket s in IrcClients.Keys)
                     {
-                        if ((s.Poll(0, SelectMode.SelectRead) && (s.Available == 0)) || !s.Connected)
+                        if (s.Poll(0, SelectMode.SelectRead) && (s.Available == 0))
                             socketsToRemove.Add(s);
                     }
 
                     socketList = new List<Socket>(IrcClients.Keys);
                     errList = new List<Socket>(IrcClients.Keys);
+                    writeList = IrcClients.Where(kv => kv.Value.HasPendingOutbound)
+                                          .Select(kv => kv.Key).ToList();
                 }
 
-                if (socketList.Count == 0)
+                if (socketList.Count == 0 && writeList.Count == 0)
                 {
                     Thread.Sleep(50); // Nothing to poll; don't spin a core
                     continue;
@@ -188,7 +193,11 @@ namespace Crystal.POLAuth
 
                 try
                 {
-                    Socket.Select(socketList, null, errList, 100_000); // Arg is microseconds: 100ms
+                    Socket.Select(
+                        socketList.Count > 0 ? socketList : null,
+                        writeList.Count  > 0 ? writeList  : null,
+                        errList.Count    > 0 ? errList    : null,
+                        100_000); // Arg is microseconds: 100ms
                 }
                 catch (ObjectDisposedException)
                 {
@@ -208,7 +217,16 @@ namespace Crystal.POLAuth
                                 continue;
                         }
 
-                        int bytesRead = s.Receive(client.RecvBuffer, client.LastPartialSize, client.RecvBuffer.Length - client.LastPartialSize, SocketFlags.None);
+                        int bytesRead = s.Receive(client.RecvBuffer, client.LastPartialSize,
+                            client.RecvBuffer.Length - client.LastPartialSize, SocketFlags.None, out SocketError recvErr);
+
+                        if (recvErr == SocketError.WouldBlock)
+                            continue;
+                        if (recvErr != SocketError.Success || bytesRead == 0)
+                        {
+                            socketsToRemove.Add(s);
+                            continue;
+                        }
 
                         if (bytesRead > 0)
                         {
@@ -229,18 +247,17 @@ namespace Crystal.POLAuth
                                 // Verify checksum before turning into a string:
                                 // ShiftJIS is lossy for some client byte sequences, so it can't happen after decoding
                                 var line = receive[..(length - 2)];
-                                int msgResult = -1;
                                 if (SqCrypto.VerifyCheckSum(line))
                                 {
                                     string message = Encoding.GetEncoding("shift_jis").GetString(line[..^4]);
-                                    msgResult = IrcMessageHandler.ParseMessage(client, message);
+                                    int handlerResult = IrcMessageHandler.ParseMessage(client, message);
+                                    if (handlerResult != 0)
+                                        Program.Log.Info($"Handler rejected a message from {client} (result {handlerResult}); ignoring.");
                                 }
-                                else
-                                    Program.Log.Info($"Received invalid checksum from {client}, kicking them.");
-
-                                // Kick bad clients
-                                if (msgResult != 0 && !client.GetIsBot())
+                                else if (!client.GetIsBot())
                                 {
+                                    // Checksum failure is unrecoverable corruption, unlike a rejected command
+                                    Program.Log.Info($"Received invalid checksum from {client}, kicking them.");
                                     client.Disconnect();
                                     socketsToRemove.Add(s);
                                     receive = Span<byte>.Empty;
@@ -279,6 +296,14 @@ namespace Crystal.POLAuth
                     }
                 }
 
+                foreach (Socket s in writeList)
+                {
+                    Client wc;
+                    lock (IrcClients) { if (!IrcClients.TryGetValue(s, out wc)) continue; }
+                    if (wc.FlushSendQueue())
+                        socketsToRemove.Add(s);
+                }
+
                 //Ping all connected clients every 30s
                 uint curTime = Utils.UnixTimeStampUTC();
                 if (curTime - LastPingTime > 30)
@@ -291,7 +316,8 @@ namespace Crystal.POLAuth
                     }
                     foreach (Client c in clientsToPing)
                     {
-                        IrcReplies.Ping(c, "Za9ABLN");
+                        try { IrcReplies.Ping(c, "Za9ABLN"); }
+                        catch (Exception e) { Program.Log.Trace(e, "Ping failed"); }
                     }
                 }
 
@@ -318,6 +344,11 @@ namespace Crystal.POLAuth
                 }
 
                 socketsToRemove.Clear();
+              }
+              catch (Exception loopEx)
+              {
+                  Program.Log.Trace(loopEx, "Unhandled error in MainLoop iteration; continuing.");
+              }
             }
 
             lock (IrcClients)
