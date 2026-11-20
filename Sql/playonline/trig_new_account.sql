@@ -1,7 +1,7 @@
 -- --------------------------------------------------------
 -- Host:                         127.0.0.1
--- Server version:               5.6.17 - MySQL Community Server (GPL)
--- Server OS:                    Win64
+-- Server version:               11.8.6-MariaDB
+-- Server OS:                    debian-linux-gnu
 -- HeidiSQL Version:             10.1.0.5464
 -- --------------------------------------------------------
 
@@ -12,7 +12,7 @@
 /*!40101 SET @OLD_SQL_MODE=@@SQL_MODE, SQL_MODE='NO_AUTO_VALUE_ON_ZERO' */;
 
 -- Dumping structure for trigger playonline.trig_new_account
-SET @OLDTMP_SQL_MODE=@@SQL_MODE, SQL_MODE='NO_ENGINE_SUBSTITUTION';
+SET @OLDTMP_SQL_MODE=@@SQL_MODE, SQL_MODE='STRICT_TRANS_TABLES,ERROR_FOR_DIVISION_BY_ZERO,NO_AUTO_CREATE_USER,NO_ENGINE_SUBSTITUTION';
 DELIMITER //
 CREATE TRIGGER `trig_new_account` AFTER INSERT ON `accounts` FOR EACH ROW BEGIN
 	INSERT INTO status (polId) VALUES (NEW.polId);

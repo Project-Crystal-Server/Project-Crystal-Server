@@ -1,7 +1,7 @@
 -- --------------------------------------------------------
 -- Host:                         127.0.0.1
--- Server version:               5.6.17 - MySQL Community Server (GPL)
--- Server OS:                    Win64
+-- Server version:               11.8.6-MariaDB
+-- Server OS:                    debian-linux-gnu
 -- HeidiSQL Version:             10.1.0.5464
 -- --------------------------------------------------------
 
@@ -14,17 +14,17 @@
 -- Dumping structure for table playonline.poldb_ffxi
 CREATE TABLE IF NOT EXISTS `poldb_ffxi` (
   `contentId` bigint(20) unsigned DEFAULT NULL,
-  `contentSubId` mediumint(8) unsigned DEFAULT '0',
-  `name` varchar(16) DEFAULT NULL,
-  `purpose` tinyint(3) unsigned DEFAULT NULL,
-  `lang` tinyint(3) unsigned DEFAULT NULL,
-  `worldName` varchar(50) DEFAULT NULL,
-  `countryId` smallint(5) unsigned DEFAULT NULL,
-  `zoneId` smallint(5) unsigned DEFAULT NULL,
-  `jobId` smallint(5) unsigned DEFAULT NULL,
-  `jobLevel` smallint(5) unsigned DEFAULT NULL,
-  `raceId` smallint(5) unsigned DEFAULT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+  `contentSubId` mediumint(8) unsigned DEFAULT 0,
+  `name` varchar(16) DEFAULT '',
+  `purpose` tinyint(3) unsigned DEFAULT 0,
+  `lang` tinyint(3) unsigned DEFAULT 0,
+  `worldName` varchar(50) DEFAULT '',
+  `countryId` smallint(5) unsigned DEFAULT 3,
+  `zoneId` smallint(5) unsigned DEFAULT 0,
+  `jobId` smallint(5) unsigned DEFAULT 0,
+  `jobLevel` smallint(5) unsigned DEFAULT 0,
+  `raceId` smallint(5) unsigned DEFAULT 0
+) ENGINE=InnoDB DEFAULT CHARSET=latin1 COLLATE=latin1_swedish_ci;
 
 -- Data exporting was unselected.
 /*!40101 SET SQL_MODE=IFNULL(@OLD_SQL_MODE, '') */;

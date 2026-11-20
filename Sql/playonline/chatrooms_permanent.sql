@@ -1,6 +1,6 @@
 -- --------------------------------------------------------
--- Host:                         147.182.172.129
--- Server version:               11.8.6-MariaDB-0+deb13u1 from Debian - -- Please help get to 10k stars at https://github.com/MariaDB/Server
+-- Host:                         127.0.0.1
+-- Server version:               11.8.6-MariaDB
 -- Server OS:                    debian-linux-gnu
 -- HeidiSQL Version:             10.1.0.5464
 -- --------------------------------------------------------
@@ -10,11 +10,6 @@
 /*!50503 SET NAMES utf8mb4 */;
 /*!40014 SET @OLD_FOREIGN_KEY_CHECKS=@@FOREIGN_KEY_CHECKS, FOREIGN_KEY_CHECKS=0 */;
 /*!40101 SET @OLD_SQL_MODE=@@SQL_MODE, SQL_MODE='NO_AUTO_VALUE_ON_ZERO' */;
-
-
--- Dumping database structure for playonline
-CREATE DATABASE IF NOT EXISTS `playonline` /*!40100 DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci */;
-USE `playonline`;
 
 -- Dumping structure for table playonline.chatrooms_permanent
 CREATE TABLE IF NOT EXISTS `chatrooms_permanent` (
@@ -28,7 +23,7 @@ CREATE TABLE IF NOT EXISTS `chatrooms_permanent` (
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Chatrooms to create on boot that exist even with 0 users.';
 
--- Dumping data for table playonline.chatrooms_permanent: ~0 rows (approximately)
+-- Dumping data for table playonline.chatrooms_permanent: ~6 rows (approximately)
 DELETE FROM `chatrooms_permanent`;
 /*!40000 ALTER TABLE `chatrooms_permanent` DISABLE KEYS */;
 INSERT INTO `chatrooms_permanent` (`id`, `chatroomName`, `zoneCode`, `usersMax`, `memberCode`, `purposeCode`, `languageCode`) VALUES

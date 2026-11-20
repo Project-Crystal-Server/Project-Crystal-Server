@@ -1,7 +1,7 @@
 -- --------------------------------------------------------
 -- Host:                         127.0.0.1
--- Server version:               5.6.17 - MySQL Community Server (GPL)
--- Server OS:                    Win64
+-- Server version:               11.8.6-MariaDB
+-- Server OS:                    debian-linux-gnu
 -- HeidiSQL Version:             10.1.0.5464
 -- --------------------------------------------------------
 
@@ -29,7 +29,7 @@ CREATE TABLE IF NOT EXISTS `friendlist` (
   CONSTRAINT `FK_Accounts_FriendPolId` FOREIGN KEY (`friendPolId`) REFERENCES `accounts` (`polId`) ON DELETE NO ACTION ON UPDATE CASCADE,
   CONSTRAINT `FK_Accounts_OwnerPolId` FOREIGN KEY (`ownerPolId`) REFERENCES `accounts` (`polId`) ON DELETE CASCADE ON UPDATE CASCADE,
   CONSTRAINT `FK_Handles_FriendHandleId` FOREIGN KEY (`friendHandleId`) REFERENCES `handles` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+) ENGINE=InnoDB DEFAULT CHARSET=latin1 COLLATE=latin1_swedish_ci;
 
 -- Data exporting was unselected.
 /*!40101 SET SQL_MODE=IFNULL(@OLD_SQL_MODE, '') */;
