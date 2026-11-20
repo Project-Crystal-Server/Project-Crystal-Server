@@ -322,14 +322,14 @@ namespace Crystal.Common.Notification
         public static string ToB64(MessageHeader header)
         {
             Span<byte> headerBytes = new byte[SIZE];
-            MemoryMarshal.Write(headerBytes, ref header);
+            MemoryMarshal.Write(headerBytes, in header);
             return SqCrypto.EncodeBase64(headerBytes.ToArray(), 0x48, false);
         }
 
         public static byte[] ToBytes(MessageHeader header)
         {
             Span<byte> headerBytes = new byte[SIZE];
-            MemoryMarshal.Write(headerBytes, ref header);
+            MemoryMarshal.Write(headerBytes, in header);
             return headerBytes.ToArray();
         }
 

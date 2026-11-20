@@ -205,6 +205,7 @@ namespace Crystal.POLAuth
                 case 3:
                 case 4:
                 case 10:
+                case 11:
                 case 1000:
                     return true;
                 default:
