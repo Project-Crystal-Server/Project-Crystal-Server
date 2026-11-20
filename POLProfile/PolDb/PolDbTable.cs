@@ -69,7 +69,7 @@ namespace Crystal.POLProfile.PolDb
             IsHandleIdKey() ? $" AND {PibNameToSqlName("z_hid")} IN (SELECT id FROM handles WHERE polId = '{polProData}')" : "";
 
         protected virtual string SelectList() => string.Join(", ", Columns.Where(col => col.CrystalDbName.Length != 0).Select(col => col.CrystalDbName));
-        protected virtual string WhereClause(string polProData, List<PolBesColumnArgument> whereCols)  => string.Join(" AND ", whereCols.Select(col => col.ToSqlWhere(this)));
+        protected virtual string WhereClause(string polProData, List<PolBesColumnArgument> whereCols)  => whereCols.Count == 0 ? "1" : string.Join(" AND ", whereCols.Select(col => col.ToSqlWhere(this)));
         protected virtual string SetClause(byte visibility, List<PolBesColumnArgument> updateCols) => string.Join(", ", updateCols.Select(col => col.ToSqlSet(this)));
 
         public byte[] ReadResults(MySqlDataReader reader, out int numResults)
@@ -117,6 +117,8 @@ namespace Crystal.POLProfile.PolDb
                         WriteEntry(writer, Columns[i], row[i]);
                 }
                 writer.Seek(resultStart + PibSize, SeekOrigin.Begin);
+                if (stream.Length < stream.Position) // Seek doesn't grow the stream; zero-pad so the last record is full size
+                    stream.SetLength(stream.Position);
 
                 // Append Profile Header if this has one
                 if (HasProfHead())

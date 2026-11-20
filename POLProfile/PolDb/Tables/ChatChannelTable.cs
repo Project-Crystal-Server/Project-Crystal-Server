@@ -21,12 +21,12 @@ along with Project Crystal Server. If not, see <https://www.gnu.org/licenses/>.
 
 namespace Crystal.POLProfile.PolDb.Tables
 {
-    public class ChatChannelTable() : PolDbTable(1001, "chatroom", [
-        new("z_pf", "", Datatype.BINARY),
-        new("z_lang", "languageCode", Datatype.BINARY),
-        new("z_use", "usersMax", Datatype.BINARY),
-        new("z_kind", "", Datatype.BINARY),
-        new("z_idx", "", Datatype.STRINGS, 0x2E),
+    public class ChatChannelTable() : PolDbTable(1001, "chatrooms_polbes_view", [
+        new("z_pf", "channelPrefix", Datatype.BINARY),
+        new("z_lang", "channelLang", Datatype.BINARY),
+        new("z_use", "channelUse", Datatype.BINARY),
+        new("z_kind", "channelKind", Datatype.BINARY),
+        new("z_idx", "channelIdx", Datatype.STRINGS, 0x2E),
         new("z_npers", "usersCurrent", Datatype.INT32),
         new("z_zone", "zoneCode", Datatype.USHORT16),
         new("z_cate0", "memberCode", Datatype.USHORT16),
