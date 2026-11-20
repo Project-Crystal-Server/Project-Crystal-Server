@@ -117,7 +117,7 @@ namespace Crystal.POLProfile.PolDb
                         WriteEntry(writer, Columns[i], row[i]);
                 }
                 writer.Seek(resultStart + PibSize, SeekOrigin.Begin);
-                if (stream.Length < stream.Position) // Seek doesn't grow the stream; zero-pad so the last record is full size
+                if (stream.Length < stream.Position)
                     stream.SetLength(stream.Position);
 
                 // Append Profile Header if this has one
