@@ -1,7 +1,7 @@
 -- --------------------------------------------------------
 -- Host:                         127.0.0.1
--- Server version:               5.6.17 - MySQL Community Server (GPL)
--- Server OS:                    Win64
+-- Server version:               11.8.6-MariaDB
+-- Server OS:                    debian-linux-gnu
 -- HeidiSQL Version:             10.1.0.5464
 -- --------------------------------------------------------
 
@@ -14,7 +14,7 @@
 -- Dumping structure for table playonline.poldb_fe
 CREATE TABLE IF NOT EXISTS `poldb_fe` (
   `contentId` bigint(20) unsigned NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+) ENGINE=InnoDB DEFAULT CHARSET=latin1 COLLATE=latin1_swedish_ci;
 
 -- Data exporting was unselected.
 /*!40101 SET SQL_MODE=IFNULL(@OLD_SQL_MODE, '') */;

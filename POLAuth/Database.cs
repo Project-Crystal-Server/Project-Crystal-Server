@@ -345,7 +345,7 @@ namespace Crystal.POLAuth
                         uint id = reader.GetUInt16("id");
                         string chatroomName = reader.GetString("chatroomName");
                         ushort zoneCode = reader.GetUInt16("zoneCode");
-                        ushort usersMax = (ushort) (reader.GetUInt16("usersMax") + 1);
+                        ushort usersMax = reader.GetUInt16("usersMax");
                         ushort memberCode = reader.GetUInt16("memberCode");
                         ushort purposeCode = reader.GetUInt16("purposeCode");
                         ushort languageCode = reader.GetUInt16("languageCode");

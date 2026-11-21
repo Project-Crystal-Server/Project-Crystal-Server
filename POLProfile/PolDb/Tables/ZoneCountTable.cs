@@ -22,7 +22,7 @@ along with Project Crystal Server. If not, see <https://www.gnu.org/licenses/>.
 namespace Crystal.POLProfile.PolDb.Tables
 {
     /* Does not seem to be used in modern PlayOnline */
-    public class ZoneCountTable() : PolDbTable(1003, "poldb_profiles", [
+    public class ZoneCountTable() : PolDbTable(1003, "", [
         new("z_group", "groupCode", Datatype.USHORT16),
         new("z_count", "zoneCount", Datatype.UINT32),
         ], 0x10)

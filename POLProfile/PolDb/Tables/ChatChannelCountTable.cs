@@ -21,9 +21,9 @@ along with Project Crystal Server. If not, see <https://www.gnu.org/licenses/>.
 
 namespace Crystal.POLProfile.PolDb.Tables
 {
-    public class ChatChannelCountTable() : PolDbTable(1002, "poldb_profiles", [
+    public class ChatChannelCountTable() : PolDbTable(1002, "chatrooms_zones", [
         new("z_zone", "zoneCode", Datatype.USHORT16),
-        new("z_count", "zoneCount", Datatype.UINT32),
+        new("z_count", "channelCount", Datatype.UINT32),
         new("z_spers", "userCount", Datatype.INT32),
         ], 0x10)
     {

@@ -1,7 +1,7 @@
 -- --------------------------------------------------------
 -- Host:                         127.0.0.1
--- Server version:               5.6.17 - MySQL Community Server (GPL)
--- Server OS:                    Win64
+-- Server version:               11.8.6-MariaDB
+-- Server OS:                    debian-linux-gnu
 -- HeidiSQL Version:             10.1.0.5464
 -- --------------------------------------------------------
 
@@ -14,20 +14,20 @@
 -- Dumping structure for table playonline.characters
 CREATE TABLE IF NOT EXISTS `characters` (
   `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
-  `subId` mediumint(8) unsigned NOT NULL DEFAULT '0',
+  `subId` mediumint(8) unsigned NOT NULL DEFAULT 0,
   `polId` varchar(10) NOT NULL,
   `creationPosition` tinyint(3) unsigned NOT NULL,
   `customPosition` tinyint(3) unsigned NOT NULL,
-  `handleCreationPosition` tinyint(3) unsigned NOT NULL DEFAULT '255',
+  `handleCreationPosition` tinyint(3) unsigned NOT NULL DEFAULT 255,
   `contentClass` smallint(5) unsigned NOT NULL,
-  `linkPosition` tinyint(3) unsigned NOT NULL DEFAULT '0',
+  `linkPosition` tinyint(3) unsigned NOT NULL DEFAULT 0,
   `name` varchar(16) NOT NULL DEFAULT '',
   `info` varchar(64) NOT NULL DEFAULT '',
-  `isPaid` tinyint(1) unsigned NOT NULL DEFAULT '1',
+  `isActive` tinyint(1) unsigned NOT NULL DEFAULT 1,
   PRIMARY KEY (`id`),
   KEY `FK_contentids_accounts` (`polId`),
   CONSTRAINT `FK_contentids_accounts` FOREIGN KEY (`polId`) REFERENCES `accounts` (`polId`) ON DELETE CASCADE ON UPDATE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+) ENGINE=InnoDB DEFAULT CHARSET=latin1 COLLATE=latin1_swedish_ci;
 
 -- Data exporting was unselected.
 /*!40101 SET SQL_MODE=IFNULL(@OLD_SQL_MODE, '') */;
