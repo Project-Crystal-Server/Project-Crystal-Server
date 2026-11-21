@@ -740,7 +740,7 @@ namespace Crystal.POLProfile
             Array.Copy(randomValue, response, 0x10);
             client.SendAnswer(response);
 
-            Program.Log.Info($"{client.GetPolProData()} updating status - Content Class: {status.CurrentContentsClass}, Active Handle: {status.ActiveHandleNumber}, Online Status: {status.OpenStat}");
+            Program.Log.Info($"{client.GetPolProData()} updating status - Content Class: {status.CurrentContentsClass}, Active Handle: {status.ActiveHandleNumber}, Active Character: {status.HasActiveCharacter}/{status.ActiveCharacterIndex}, Online Status: {status.OpenStat}");
         }
 
         private void GetMyStatus(Client client, byte[] recvObj)

@@ -41,7 +41,7 @@ namespace Crystal.Common.Notification
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             set
             {
-                ActiveCharacterBits = (byte)(((value & 0x7) << 0x1) | (ActiveCharacterBits & 0xE));
+                ActiveCharacterBits = (byte)(((value & 0x7) << 0x1) | (ActiveCharacterBits & 0x1));
             }
         }
 
