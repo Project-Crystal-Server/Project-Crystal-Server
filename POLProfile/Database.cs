@@ -724,7 +724,7 @@ namespace Crystal.POLProfile
                            friendHandle.creationPosition AS activeHandleNumber,
                            IFNULL(status.isOnline AND status.activeHandleId = Myself.friendHandleId, 0) AS isOnline,
                            IFNULL(status.hasActiveCharacter AND status.activeHandleId = Myself.friendHandleId, 0) AS hasActiveCharacter,
-                           IF(status.activeHandleId = Myself.friendHandleId, characters.creationPosition, NULL) AS activeCharacterNumber,
+                           IF(status.activeHandleId = Myself.friendHandleId, characters.linkPosition, NULL) AS activeCharacterNumber,
                            IFNULL(IF(status.activeHandleId = Myself.friendHandleId, status.currentContentClass, 0), 0) AS currentContentClass,
                            IFNULL(status.canReceiveMsgs, 0) AS canReceiveMsgs,
                            IFNULL(status.onlineStatus, 0) AS onlineStatus,
@@ -861,7 +861,7 @@ namespace Crystal.POLProfile
                     SELECT 
                         handles.creationPosition AS activeHandleNumber,
                         status.hasActiveCharacter,
-                        characters.creationPosition AS activeCharacterNumber,
+                        characters.linkPosition AS activeCharacterNumber,
                         status.isOnline,
                         status.canReceiveMsgs,
                         status.onlineStatus,

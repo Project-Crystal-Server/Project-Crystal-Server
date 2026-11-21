@@ -9,7 +9,7 @@ SELECT
 		) AS myFLNum,
    handles.creationPosition AS activeHandleNumber,
    status.hasActiveCharacter,
-   characters.creationPosition AS activeCharacterNumber,
+   characters.linkPosition AS activeCharacterNumber,
    status.isOnline,
    status.canReceiveMsgs,
    status.onlineStatus,
