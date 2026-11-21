@@ -30,7 +30,7 @@ namespace Crystal.Common.Notification.Payload
         private const byte UPDATE_STATUS        = 0x01;
         private const byte UPDATE_GROUP         = 0x02;
         private const byte UPDATE_DISPLAYPIC    = 0x04;
-        private const byte UPDATE_UNKNOWN       = 0x08;
+        private const byte UPDATE_CHARACTER     = 0x08;
         private const byte UPDATE_NAME          = 0x10;
         private const byte UPDATE_COMMENT       = 0x20;
         private const byte UPDATE_TOPRIGHT      = 0x40;
@@ -39,6 +39,10 @@ namespace Crystal.Common.Notification.Payload
         private ushort PayloadSize = 8;
 
         private uint DisplayPicId = 0;
+        private byte CharacterAttachOrder = 0;
+        private ushort CharacterContentsClass = 0;
+        private uint CharacterSubId = 0;
+        private ulong CharacterContentsId = 0;
         private ulong GroupId = 0;
         private ulong GroupPackedInfo = 0;
         private string NameStr = null;
@@ -67,9 +71,13 @@ namespace Crystal.Common.Notification.Payload
             PayloadSize += 0x8;
             return this;
         }
-        public FriendPayloadBuilder Unknown()
+        public FriendPayloadBuilder Character(byte attachOrder, ushort contentsClass, uint subId, ulong contentsId)
         {
-            StatusBits |= UPDATE_UNKNOWN;
+            CharacterAttachOrder = attachOrder;
+            CharacterContentsClass = contentsClass;
+            CharacterSubId = subId;
+            CharacterContentsId = contentsId;
+            StatusBits |= UPDATE_CHARACTER;
             PayloadSize += 0x10;
             return this;
         }
@@ -118,10 +126,13 @@ namespace Crystal.Common.Notification.Payload
                     writer.Write((UInt64)DisplayPicId);
                 }
 
-                if ((StatusBits & UPDATE_UNKNOWN) != 0)
+                if ((StatusBits & UPDATE_CHARACTER) != 0)
                 {
-                    int pos = (int)writer.BaseStream.Position;
-                    writer.Seek(pos + 0x10, SeekOrigin.Begin);
+                    writer.Write((byte)1);
+                    writer.Write(CharacterAttachOrder);
+                    writer.Write(CharacterContentsClass);
+                    writer.Write(CharacterSubId);
+                    writer.Write(CharacterContentsId);
                 }
 
                 if ((StatusBits & UPDATE_NAME) != 0)

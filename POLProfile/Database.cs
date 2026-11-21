@@ -724,8 +724,11 @@ namespace Crystal.POLProfile
                            friendHandle.creationPosition AS activeHandleNumber,
                            IFNULL(status.isOnline AND status.activeHandleId = Myself.friendHandleId, 0) AS isOnline,
                            IFNULL(status.hasActiveCharacter AND status.activeHandleId = Myself.friendHandleId, 0) AS hasActiveCharacter,
-                           IF(status.activeHandleId = Myself.friendHandleId, characters.creationPosition, NULL) AS activeCharacterNumber,
+                           IF(status.activeHandleId = Myself.friendHandleId, characters.linkPosition, NULL) AS activeCharacterNumber,
                            IFNULL(IF(status.activeHandleId = Myself.friendHandleId, status.currentContentClass, 0), 0) AS currentContentClass,
+                           characters.contentClass AS activeCharacterClass,
+                           characters.subId AS activeCharacterSubId,
+                           characters.id AS activeCharacterId,
                            IFNULL(status.canReceiveMsgs, 0) AS canReceiveMsgs,
                            IFNULL(status.onlineStatus, 0) AS onlineStatus,
                            IFNULL(poldb_profiles.portrait, 0) AS portrait,
@@ -776,7 +779,13 @@ namespace Crystal.POLProfile
 
                         uint portraitId = reader.GetUInt32("portrait");
                         string comment = reader.GetString("comment");
-                        byte[] payload = new FriendPayloadBuilder(true).Comment(comment).DisplayPic(portraitId).BuildPayload();
+                        FriendPayloadBuilder payloadBuilder = new FriendPayloadBuilder(true).Comment(comment).DisplayPic(portraitId);
+                        if (hasActiveCharacter && !reader.IsDBNull(reader.GetOrdinal("activeCharacterId")))
+                        {
+                            payloadBuilder.Character(currentActiveCharacter, reader.GetUInt16("activeCharacterClass"),
+                                                     reader.GetUInt32("activeCharacterSubId"), reader.GetUInt64("activeCharacterId"));
+                        }
+                        byte[] payload = payloadBuilder.BuildPayload();
 
                         statusResults.Add(new DbFriendStatusResult(status, polIdData, myFriendListPosition, otherFriendlistPosition, payload));
                     }
@@ -846,6 +855,42 @@ namespace Crystal.POLProfile
             return null;
         }
 
+        // The character an account is playing, or null when it has none active.
+        public static CharacterPrimitive? GetActiveCharacter(string polProData)
+        {
+            using MySqlConnection conn = new(String.Format("Server={0}; Port={1}; Database={2}; UID={3}; Password={4}", DB_HOST, DB_PORT, DB_NAME, DB_USERNAME, DB_PASSWORD));
+            try
+            {
+                conn.Open();
+                string query = @"
+                    SELECT characters.linkPosition, characters.contentClass, characters.subId, characters.id
+                    FROM status
+                        JOIN characters ON characters.id = status.activeCharacterId
+                    WHERE status.polId = @polId AND status.hasActiveCharacter = 1
+                    ";
+                using MySqlCommand cmd = new(query, conn);
+                cmd.Parameters.AddWithValue("@polId", polProData);
+                using MySqlDataReader reader = cmd.ExecuteReader();
+                if (reader.Read())
+                {
+                    return new CharacterPrimitive
+                    {
+                        IsValid = 1,
+                        AttachOrder = reader.GetByte("linkPosition"),
+                        ContentsClass = reader.GetUInt16("contentClass"),
+                        ContentsSubUserId = reader.GetUInt32("subId"),
+                        ContentsId = reader.GetUInt64("id")
+                    };
+                }
+            }
+            catch (MySqlException e)
+            {
+                Program.Log.Error(e.ToString());
+            }
+
+            return null;
+        }
+
         public static DbFriendStatusResult GetStatus(string polProData)
         {
             string query;
@@ -861,7 +906,7 @@ namespace Crystal.POLProfile
                     SELECT 
                         handles.creationPosition AS activeHandleNumber,
                         status.hasActiveCharacter,
-                        characters.creationPosition AS activeCharacterNumber,
+                        characters.linkPosition AS activeCharacterNumber,
                         status.isOnline,
                         status.canReceiveMsgs,
                         status.onlineStatus,
@@ -963,8 +1008,13 @@ namespace Crystal.POLProfile
                 query = @"
                     UPDATE status
                     INNER JOIN handles ON handles.polId = status.polId
+                    LEFT JOIN characters ON characters.polId = status.polId AND
+                                            characters.handleCreationPosition = handles.creationPosition AND
+                                            characters.linkPosition = @activeCharacterIndex
                     SET
 	                    activeHandleId = handles.id,
+                        hasActiveCharacter = IF(@hasActiveCharacter <> 0 AND characters.id IS NOT NULL, 1, 0),
+                        activeCharacterId = IF(@hasActiveCharacter <> 0, IFNULL(characters.id, 0), 0),
                         currentContentClass = @currentContentClass,
                         onlineStatus = @onlineStatus
                     WHERE status.polId = @polId AND handles.creationPosition = @activeHandleNumber;
@@ -973,6 +1023,8 @@ namespace Crystal.POLProfile
                 cmd = new MySqlCommand(query, conn);
                 cmd.Parameters.AddWithValue("@polId", polId);
                 cmd.Parameters.AddWithValue("@activeHandleNumber", request.ActiveHandleNumber);
+                cmd.Parameters.AddWithValue("@hasActiveCharacter", request.HasActiveCharacter);
+                cmd.Parameters.AddWithValue("@activeCharacterIndex", request.ActiveCharacterIndex);
                 cmd.Parameters.AddWithValue("@currentContentClass", request.CurrentContentsClass);
                 cmd.Parameters.AddWithValue("@onlineStatus", request.OpenStat);
                 cmd.ExecuteNonQuery();

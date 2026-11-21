@@ -24,6 +24,7 @@ using Crystal.Common.Notification;
 using Crystal.Common.Notification.Payload;
 using Crystal.Common.PolClient;
 using Crystal.POLProfile.DataObjects;
+using Crystal.POLProfile.DataObjects.Pol.Character;
 using Crystal.POLProfile.DataObjects.Pol.Group;
 using System;
 using System.Collections.Generic;
@@ -137,6 +138,9 @@ namespace Crystal.POLProfile
                         payloadBuilder.DisplayPic(displayPicIdAndComment.Item1).Comment(displayPicIdAndComment.Item2);
                     }
 
+                    if (!clearStatus)
+                        AddActiveCharacter(payloadBuilder, polProData);
+
                     byte[] payload = payloadBuilder.BuildPayload();
 
                     // Build base header
@@ -188,9 +192,17 @@ namespace Crystal.POLProfile
             {
                 Tuple<uint, string> displayPicIdAndComment = Database.GetCommentAndDisplayPicId(polProData);
                 payloadBuilder.DisplayPic(displayPicIdAndComment.Item1).Comment(displayPicIdAndComment.Item2);
+                AddActiveCharacter(payloadBuilder, polProData);
             }
 
             return payloadBuilder.BuildPayload();
+        }
+
+        private static void AddActiveCharacter(FriendPayloadBuilder payloadBuilder, string polProData)
+        {
+            CharacterPrimitive? character = Database.GetActiveCharacter(polProData);
+            if (character is CharacterPrimitive c)
+                payloadBuilder.Character(c.AttachOrder, c.ContentsClass, c.ContentsSubUserId, c.ContentsId);
         }
 
         public void NotifyFriendLinkChange(string polProData, byte? flIndex, string friendPolProData, bool sendPicAndComment = false, bool clearStatus = false, bool requireMutual = true)
