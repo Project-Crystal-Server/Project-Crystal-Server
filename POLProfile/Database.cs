@@ -963,8 +963,13 @@ namespace Crystal.POLProfile
                 query = @"
                     UPDATE status
                     INNER JOIN handles ON handles.polId = status.polId
+                    LEFT JOIN characters ON characters.polId = status.polId AND
+                                            characters.handleCreationPosition = handles.creationPosition AND
+                                            characters.linkPosition = @activeCharacterIndex
                     SET
 	                    activeHandleId = handles.id,
+                        hasActiveCharacter = IF(@hasActiveCharacter <> 0 AND characters.id IS NOT NULL, 1, 0),
+                        activeCharacterId = IF(@hasActiveCharacter <> 0, IFNULL(characters.id, 0), 0),
                         currentContentClass = @currentContentClass,
                         onlineStatus = @onlineStatus
                     WHERE status.polId = @polId AND handles.creationPosition = @activeHandleNumber;
@@ -973,6 +978,8 @@ namespace Crystal.POLProfile
                 cmd = new MySqlCommand(query, conn);
                 cmd.Parameters.AddWithValue("@polId", polId);
                 cmd.Parameters.AddWithValue("@activeHandleNumber", request.ActiveHandleNumber);
+                cmd.Parameters.AddWithValue("@hasActiveCharacter", request.HasActiveCharacter);
+                cmd.Parameters.AddWithValue("@activeCharacterIndex", request.ActiveCharacterIndex);
                 cmd.Parameters.AddWithValue("@currentContentClass", request.CurrentContentsClass);
                 cmd.Parameters.AddWithValue("@onlineStatus", request.OpenStat);
                 cmd.ExecuteNonQuery();
