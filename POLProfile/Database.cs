@@ -368,6 +368,31 @@ namespace Crystal.POLProfile
         #endregion
 
         #region Friend List
+        private static Dictionary<byte, List<CharacterPrimitive>> LoadFriendPrimitives(MySqlConnection conn, string polProData, byte? friendNum = null)
+        {
+            Dictionary<byte, List<CharacterPrimitive>> result = [];
+            string query = @"
+                SELECT friendNum, attachOrder, contentClass, contentSubId, contentId
+                FROM friendlist_primitives
+                WHERE ownerPolId = @polId" + (friendNum.HasValue ? " AND friendNum = @friendNum" : "") + @"
+                ORDER BY friendNum, attachOrder";
+
+            using MySqlCommand cmd = new(query, conn);
+            cmd.Parameters.AddWithValue("@polId", polProData);
+            if (friendNum.HasValue)
+                cmd.Parameters.AddWithValue("@friendNum", friendNum.Value);
+
+            using MySqlDataReader reader = cmd.ExecuteReader();
+            while (reader.Read())
+            {
+                byte num = reader.GetByte("friendNum");
+                if (!result.TryGetValue(num, out List<CharacterPrimitive> prims))
+                    result[num] = prims = [];
+                prims.Add(CharacterPrimitive.FromSql(reader));
+            }
+            return result;
+        }
+
         public static List<FriendData> LoadFriendList(string polProData)
         {
             List<FriendData> friendDataList = new();
@@ -380,8 +405,9 @@ namespace Crystal.POLProfile
                 try
                 {
                     conn.Open();
+                    Dictionary<byte, List<CharacterPrimitive>> primitives = LoadFriendPrimitives(conn, polProData);
                     query = @"
-                        SELECT 
+                        SELECT
                             friendPolId AS polProId,
                             friendHandleId AS handleId,
                             handles.creationPosition AS handlePosition,
@@ -392,7 +418,7 @@ namespace Crystal.POLProfile
                             friendlist.temp,
                             friendlist.level,
                             friendlist.grp
-                        FROM friendlist 
+                        FROM friendlist
                         LEFT JOIN handles ON handles.id = friendlist.friendHandleId
                         WHERE ownerPolId = @polId
                     ";
@@ -402,7 +428,10 @@ namespace Crystal.POLProfile
                     using MySqlDataReader Reader = cmd.ExecuteReader();
                     while (Reader.Read())
                     {
-                        friendDataList.Add(FriendData.FromSql(Reader));
+                        FriendData friend = FriendData.FromSql(Reader);
+                        if (primitives.TryGetValue(friend.CreationPosition, out List<CharacterPrimitive> prims))
+                            friend.SetCharacterPrimitives(prims);
+                        friendDataList.Add(friend);
                     }
                 }
                 catch (MySqlException e)
@@ -429,8 +458,9 @@ namespace Crystal.POLProfile
                 try
                 {
                     conn.Open();
+                    Dictionary<byte, List<CharacterPrimitive>> primitives = LoadFriendPrimitives(conn, polProData, num);
                     query = @"
-                        SELECT 
+                        SELECT
                             friendPolId AS polProId,
                             friendHandleId AS handleId,
                             handles.creationPosition AS handlePosition,
@@ -441,7 +471,7 @@ namespace Crystal.POLProfile
                             friendlist.temp,
                             friendlist.level,
                             friendlist.grp
-                        FROM friendlist 
+                        FROM friendlist
                         LEFT JOIN handles ON handles.id = friendlist.friendHandleId
                         WHERE ownerPolId = @polId AND friendlist.creationPosition = @creationPosition
                     ";
@@ -452,7 +482,10 @@ namespace Crystal.POLProfile
                     using MySqlDataReader Reader = cmd.ExecuteReader();
                     while (Reader.Read())
                     {
-                        return FriendData.FromSql(Reader);
+                        FriendData friend = FriendData.FromSql(Reader);
+                        if (primitives.TryGetValue(friend.CreationPosition, out List<CharacterPrimitive> prims))
+                            friend.SetCharacterPrimitives(prims);
+                        return friend;
                     }
                 }
                 catch (MySqlException e)
@@ -1739,14 +1772,7 @@ namespace Crystal.POLProfile
 
                     while (reader.Read())
                     {
-                        charaPrims.Add(new CharacterPrimitive()
-                        {
-                            IsValid = 1,
-                            AttachOrder = reader.GetByte("attachOrder"),
-                            ContentsClass = reader.GetUInt16("contentClass"),
-                            ContentsSubUserId = reader.GetUInt32("contentSubId"),
-                            ContentsId = reader.GetUInt64("contentId")
-                        });
+                        charaPrims.Add(CharacterPrimitive.FromSql(reader));
                     }
 
                     FriendData friendData = FriendData.CreateStranger(SqCrypto.PolProDataToPolId(polProData, 0, 0), handleId, handleNum, handleName, charaPrims);

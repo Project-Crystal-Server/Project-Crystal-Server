@@ -19,6 +19,7 @@ along with Project Crystal Server. If not, see <https://www.gnu.org/licenses/>.
 ===========================================================================
 */
 
+using MySqlConnector;
 using System.Runtime.InteropServices;
 
 namespace Crystal.POLProfile.DataObjects.Pol.Character
@@ -33,5 +34,14 @@ namespace Crystal.POLProfile.DataObjects.Pol.Character
         public ulong ContentsId;
 
         public const int SIZE = 0x10;
+
+        public static CharacterPrimitive FromSql(MySqlDataReader reader) => new()
+        {
+            IsValid = 1,
+            AttachOrder = reader.GetByte("attachOrder"),
+            ContentsClass = reader.GetUInt16("contentClass"),
+            ContentsSubUserId = reader.GetUInt32("contentSubId"),
+            ContentsId = reader.GetUInt64("contentId")
+        };
     }
 }

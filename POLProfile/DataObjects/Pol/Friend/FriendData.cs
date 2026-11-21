@@ -195,18 +195,18 @@ namespace Crystal.POLProfile.DataObjects.Pol.Friend
                 CreationPosition = creationPosition,
                 CustomPosition = customPosition,
                 PolProId = polProId,
-                Name = name,
-                CharacterPrimitive1 = new CharacterPrimitive(),
-                CharacterPrimitive2 = new CharacterPrimitive(),
-                CharacterPrimitive3 = new CharacterPrimitive(),
-                CharacterPrimitive4 = new CharacterPrimitive(),
-                CharacterPrimitive5 = new CharacterPrimitive(),
-                CharacterPrimitive6 = new CharacterPrimitive(),
-                CharacterPrimitive7 = new CharacterPrimitive(),
-                CharacterPrimitive8 = new CharacterPrimitive()
+                Name = name
             };
 
             return friendData;
+        }
+
+        public void SetCharacterPrimitives(List<CharacterPrimitive> prims)
+        {
+            Span<CharacterPrimitive> slots = MemoryMarshal.CreateSpan(ref CharacterPrimitive1, 8);
+            slots.Clear();
+            for (int i = 0; i < prims.Count && i < slots.Length; i++)
+                slots[i] = prims[i];
         }
 
         public override string ToString()
@@ -217,8 +217,6 @@ namespace Crystal.POLProfile.DataObjects.Pol.Friend
 
         public static FriendData CreateStranger(ulong polProId, ulong handleId, byte handleNum, string name, List<CharacterPrimitive> prims)
         {
-            int numChars = prims.Count;
-
             FriendData friendData = new()
             {
                 IsValid = true,
@@ -231,16 +229,9 @@ namespace Crystal.POLProfile.DataObjects.Pol.Friend
                 CreationPosition = 0,
                 CustomPosition = 0,
                 PolProId = polProId,
-                Name = name,
-                CharacterPrimitive1 = numChars > 0 ? prims[0] : new CharacterPrimitive(),
-                CharacterPrimitive2 = numChars > 1 ? prims[1] : new CharacterPrimitive(),
-                CharacterPrimitive3 = numChars > 2 ? prims[2] : new CharacterPrimitive(),
-                CharacterPrimitive4 = numChars > 3 ? prims[3] : new CharacterPrimitive(),
-                CharacterPrimitive5 = numChars > 4 ? prims[4] : new CharacterPrimitive(),
-                CharacterPrimitive6 = numChars > 5 ? prims[5] : new CharacterPrimitive(),
-                CharacterPrimitive7 = numChars > 6 ? prims[6] : new CharacterPrimitive(),
-                CharacterPrimitive8 = numChars > 7 ? prims[7] : new CharacterPrimitive()
+                Name = name
             };
+            friendData.SetCharacterPrimitives(prims);
 
             return friendData;
         }
