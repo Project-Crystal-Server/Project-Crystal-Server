@@ -21,18 +21,18 @@ along with Project Crystal Server. If not, see <https://www.gnu.org/licenses/>.
 
 namespace Crystal.POLProfile.PolDb.Tables
 {
-    public class KbFaqTable() : PolDbTable(1004, "poldb_kb_faqs", [
-        new("z_id", "groupCode", Datatype.STRINGS),
-        new("z_cate1", "zoneCount", Datatype.USHORT16),
-        new("z_cate2", "zoneCount", Datatype.USHORT16),
-        new("z_que", "zoneCount", Datatype.STRINGS, 0x101),
-        new("z_ans", "zoneCount", Datatype.STRINGS, 0xFA1),
-        new("z_sr1", "zoneCount", Datatype.STRINGS, 0x1),
-        new("z_sr2", "zoneCount", Datatype.STRINGS, 0x1),
-        new("z_ctime", "zoneCount", Datatype.UINT32),
-        new("z_mtime", "zoneCount", Datatype.UINT32),
-        new("z_locl", "zoneCount", Datatype.STRINGS, 0x9),
-        ], 0x10)
+    public class KbFaqTable() : PolDbTable(1004, "poldb_kb_view", [
+        new("z_id", "id", Datatype.UINT32),
+        new("z_cate1", "category1", Datatype.USHORT16),
+        new("z_cate2", "category2", Datatype.USHORT16),
+        new("z_que", "question", Datatype.STRINGS, 0x101),
+        new("z_ans", "answer", Datatype.STRINGS, 0xFA1),
+        new("z_sr1", "searchQuestion", Datatype.STRINGS, 0x1),
+        new("z_sr2", "searchAnswer", Datatype.STRINGS, 0x1),
+        new("z_ctime", "createTime", Datatype.UINT32),
+        new("z_mtime", "modifyTime", Datatype.UINT32),
+        new("z_locl", "locale", Datatype.STRINGS, 0x9),
+        ], 0x10C8)
     {
     }
 }   

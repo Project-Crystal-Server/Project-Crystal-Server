@@ -178,7 +178,7 @@ namespace Crystal.POLProfile.PolDb
             {
                 case Datatype.CHARACTERS:
                 case Datatype.STRINGS:
-                    string str = Encoding.UTF8.GetString(buffer);
+                    string str = Encoding.GetEncoding("shift_jis").GetString(buffer);
                     return str.Substring(0, str.IndexOf('\0'));
                 case Datatype.BINARY:
                     return MemoryMarshal.Read<byte>(buffer);

@@ -73,6 +73,7 @@ namespace Crystal.POLProfile.PolDb
         private static readonly Regex TruncRegex = new(@"\bTRUNC\b", RegexOptions.Compiled);
         private static readonly Regex HexToRawRegex = new(@"\bHEXTORAW\('([0-9A-Fa-f]+)'\)", RegexOptions.Compiled);
         private static readonly Regex EqAnyRegex = new(@"=\s*ANY\b", RegexOptions.Compiled);
+        private static readonly Regex EscapeRegex = new(@"\bESCAPE\s*'\\'", RegexOptions.Compiled);
 
         private static string ParsePolSql(string input)
         {
@@ -84,6 +85,7 @@ namespace Crystal.POLProfile.PolDb
             input = TruncRegex.Replace(input, "TRUNCATE");
             input = HexToRawRegex.Replace(input, "0x$1");
             input = EqAnyRegex.Replace(input, " IN");
+            input = EscapeRegex.Replace(input, @"ESCAPE '\\'");
             return input;
         }
 

@@ -172,7 +172,7 @@ namespace Crystal.POLProfile.PolDb
                         break;
                     }
                     byte[] str = Encoding.GetEncoding("shift_jis").GetBytes((string)value);
-                    int written = Math.Min(str.Length, colDef.StringLength);
+                    int written = Math.Min(str.Length, colDef.StringLength - 1);
                     writer.Write(str, 0, written);
                     writer.Seek(colDef.StringLength - written, SeekOrigin.Current);
                     break;
