@@ -249,8 +249,7 @@ namespace Crystal.Mahjong.Models
             PolFileSys.CloseFile(file);
 
             // Start IRC Client
-            IrcClient.Connect("127.0.0.1", MgConstants.MG_IRC_PORT);
-            while (!IrcClient.IsAuthenticated()) ;
+            IrcClient.ConnectAndAuthenticate("127.0.0.1", MgConstants.MG_IRC_PORT);
             
             for (int i = 0; i < Tables.Length; i++)
                 Tables[i].Init();

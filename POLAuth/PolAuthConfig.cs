@@ -30,6 +30,7 @@ namespace Crystal.POLAuth
     {
         public readonly string ServerIp;
         public readonly string ServerName;
+        public readonly bool IsMinigameServer;
 
         public readonly string PolProNotiferId;
         public readonly string PolProNotiferPassword;
@@ -54,6 +55,7 @@ namespace Crystal.POLAuth
             XmlNode cfgNode = doc.DocumentElement.SelectSingleNode("/polauthcfg");
             ServerIp = cfgNode.Attributes["serverIp"]?.InnerText;
             ServerName = cfgNode.Attributes["serverName"]?.InnerText;
+            IsMinigameServer = bool.TryParse(cfgNode.Attributes["minigame"]?.InnerText, out bool isMinigame) && isMinigame;
 
             // Go through subsettings
             foreach (XmlNode cfgChildNode in doc.DocumentElement.ChildNodes)

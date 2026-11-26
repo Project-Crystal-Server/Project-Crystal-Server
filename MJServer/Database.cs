@@ -22,6 +22,7 @@ along with Project Crystal Server. If not, see <https://www.gnu.org/licenses/>.
 using System;
 using System.Collections.Generic;
 using Crystal.Mahjong.Models;
+using MySqlConnector;
 
 namespace Crystal.Mahjong
 {

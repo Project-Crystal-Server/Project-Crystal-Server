@@ -38,6 +38,9 @@ namespace Crystal.POLAuth.DataObjects.Irc
 
         public readonly bool IsPermanent;
 
+        // Only the main POL server's channels are chatrooms tracked in the database
+        private bool PersistToDb => !Server.IsMinigameServer;
+
         public Channel(AuthServer server, string name, bool isPermanent = false, int limit = 256)
         {
             Server = server;
@@ -84,7 +87,8 @@ namespace Crystal.POLAuth.DataObjects.Irc
             // Unsure if this is supposed to be here but it fixes the title not appearing.
             IrcReplies.Topic(client, client.GetIdentifier(), Name, Topic);
 
-            Database.UpdateChatroomPersonCount(Name, true);
+            if (PersistToDb)
+                Database.UpdateChatroomPersonCount(Name, true);
         }
 
         public void Part(Client client)
@@ -105,9 +109,10 @@ namespace Crystal.POLAuth.DataObjects.Irc
             if (Members.Count == 0 && !IsPermanent)
             {
                 Server.IrcChannels.Remove(Name);
-                Database.DeleteChatroom(Name);
+                if (PersistToDb)
+                    Database.DeleteChatroom(Name);
             }
-            else
+            else if (PersistToDb)
                 Database.UpdateChatroomPersonCount(Name, false);
         }
 
@@ -124,9 +129,10 @@ namespace Crystal.POLAuth.DataObjects.Irc
             if (Members.Count == 0 && !IsPermanent)
             {
                 Server.IrcChannels.Remove(Name);
-                Database.DeleteChatroom(Name);
+                if (PersistToDb)
+                    Database.DeleteChatroom(Name);
             }
-            else
+            else if (PersistToDb)
                 Database.UpdateChatroomPersonCount(Name, false);
         }
 
@@ -186,7 +192,8 @@ namespace Crystal.POLAuth.DataObjects.Irc
             {
                 foreach (Client c in Members)
                     IrcReplies.Topic(c, client.GetIdentifier(), Name, topic);
-                Database.UpdateChatroomTopicData(Name, topic);
+                if (PersistToDb)
+                    Database.UpdateChatroomTopicData(Name, topic);
             }
         }
 

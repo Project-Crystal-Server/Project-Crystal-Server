@@ -22,6 +22,7 @@ along with Project Crystal Server. If not, see <https://www.gnu.org/licenses/>.
 using Crystal.Common;
 using NLog;
 using System;
+using System.IO;
 using System.Threading;
 using Crystal.Common.MiniGame;
 using System.Text;
@@ -36,6 +37,11 @@ namespace Crystal.Mahjong
 
         static void Main(string[] args)
         {
+            // Load NLog Config
+            using var nlogStream = typeof(Program).Assembly.GetManifestResourceStream("Crystal.Mahjong.NLog.config");
+            using var nlogReader = new StreamReader(nlogStream);
+            LogManager.Configuration = new NLog.Config.XmlLoggingConfiguration(nlogReader, null);
+
             Mg.Init("MJS");
             ulong test2 = Mg.MjKey(0x5B01E336D27B5003);
             ulong test1 = Mg.MjKey(0x5B01E44C045A5792);

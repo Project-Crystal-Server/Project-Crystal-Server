@@ -33,7 +33,8 @@ namespace Crystal.POLAuth
 {
     public class AuthServer
     {
-        public const int AUTHENTICATION_PORT = 51240;
+        public const int POLIRC_PORT = 51240;
+        public const int MGIRC_PORT = 51241;
         public const string COMM_PIPE_NAME = "crystal_auth.comm";
         private const int BACKLOG = 100;
         
@@ -41,6 +42,7 @@ namespace Crystal.POLAuth
         public readonly string ServerIp;
         public readonly ushort ServerPort;
         public readonly string ServerName;
+        public readonly bool IsMinigameServer;
 
         // Connection
         private Socket ServerSocket;
@@ -64,22 +66,26 @@ namespace Crystal.POLAuth
         // Other
         public readonly PolAuthAdminControl AdminControl = new();
 
-        public AuthServer(string ip, string name, string polProId, string polProPassword, string polProIpAddress)
+        public AuthServer(string ip, string name, bool isMinigameServer, string polProId, string polProPassword, string polProIpAddress)
         {
             ServerIp = ip;
-            ServerPort = AUTHENTICATION_PORT;
+            ServerPort = (ushort)(isMinigameServer ? MGIRC_PORT : POLIRC_PORT);
             ServerName = name;
+            IsMinigameServer = isMinigameServer;
             PolProId = polProId;
             PolProPassword = polProPassword;
             PolProIpAddress = polProIpAddress;
             IrcMessageHandler = new(this);
         }
 
-        public bool StartServer(bool isMainPolAuth = false)
+        public bool StartServer()
         {
+            Console.ForegroundColor = ConsoleColor.Yellow;
+            if (IsMinigameServer)
+                Program.Log.Info("Server starting in minigame mode");
+
             // Only the main POL Auth server touches this. MG Servers do not.
-            if (isMainPolAuth) {
-                Console.ForegroundColor = ConsoleColor.Yellow;
+            if (!IsMinigameServer) {
                 Program.Log.Info("Clearing sessions table...");
                 Database.ClearSessions();
                 Program.Log.Info("Clearing chatroom table...");
@@ -92,8 +98,8 @@ namespace Crystal.POLAuth
                     chann.SetTopic(null, channelAndTopicAndLimit.Item2);
                     IrcChannels.Add(channelAndTopicAndLimit.Item1, chann);
                 }
-                Console.ForegroundColor = ConsoleColor.Gray;
             }
+            Console.ForegroundColor = ConsoleColor.Gray;
 
             IPEndPoint serverEndPoint = new(IPAddress.Parse("0.0.0.0"), ServerPort);
             try

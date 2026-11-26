@@ -21,9 +21,9 @@ along with Project Crystal Server. If not, see <https://www.gnu.org/licenses/>.
 
 using Crystal.Common.MiniGame;
 using Crystal.Common.PolFileSystem;
-using Crystal.POLAuth;
 using NLog;
 using System;
+using System.IO;
 using System.Threading;
 
 namespace Crystal.TetraMaster
@@ -32,12 +32,16 @@ namespace Crystal.TetraMaster
     {
         public static readonly Logger Log = LogManager.GetCurrentClassLogger();
 
-        private static AuthServer MgServer;
         private static TmBalancerServer BalancerServer;
         private static TmShopMenuServer ShopMenuServer;
 
         static void Main(string[] args)
         {
+            // Load NLog Config
+            using var nlogStream = typeof(Program).Assembly.GetManifestResourceStream("Crystal.TetraMaster.NLog.config");
+            using var nlogReader = new StreamReader(nlogStream);
+            LogManager.Configuration = new NLog.Config.XmlLoggingConfiguration(nlogReader, null);
+
             Log.Info("===================");
             Log.Info("Tetra Master Server");
             Log.Info("===================");
@@ -46,18 +50,11 @@ namespace Crystal.TetraMaster
             PolFileSys.Init("D:\\Coding\\project-crystal-server\\Build\\POLProfile\\Debug\\profile_data");
 
             // Args
-            ProcessArgs(args, out bool startMgIrc, out bool startBalancer, out bool startShopMenuServer);
+            ProcessArgs(args, out bool startBalancer, out bool startShopMenuServer);
 
-            startMgIrc = startBalancer = startShopMenuServer = true;
+            startBalancer = startShopMenuServer = true;
 
-            // Start the servers
-            if (startMgIrc)
-            {
-                Log.Info("Starting POL Auth server for MiniGame...");
-                MgServer = new("69.254.56.86", MgConstants.MG_IRC_PORT, "pol-1048-51241.pol.com", "", "", "");
-                MgServer.StartServer(false);
-            }
-
+            // Start the servers. Requires a POLAuth instance running in minigame mode.
             if (startBalancer)
             {
                 BalancerServer = new TmBalancerServer();
@@ -85,22 +82,19 @@ namespace Crystal.TetraMaster
             }
         }
 
-        private static void ProcessArgs(string[] args, out bool startMgIrc, out bool startBalancer, out bool startShopMenuServer)
+        private static void ProcessArgs(string[] args, out bool startBalancer, out bool startShopMenuServer)
         {
             // Default
             if (args.Length == 0)
-                startMgIrc = startBalancer = startShopMenuServer = true;
+                startBalancer = startShopMenuServer = true;
             else
-                startMgIrc = startBalancer = startShopMenuServer = false;
+                startBalancer = startShopMenuServer = false;
 
             // Find args
             for (int i = 0; i < args.Length; i++)
             {
                 switch (args[i])
                 {
-                    case "--mgirc":
-                        startMgIrc = true;
-                        break;
                     case "--balancer":
                         startBalancer = true;
                         break;

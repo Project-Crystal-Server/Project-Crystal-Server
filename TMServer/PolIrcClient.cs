@@ -25,6 +25,7 @@ using System;
 using System.Net;
 using System.Net.Sockets;
 using System.Text;
+using System.Threading;
 
 namespace Crystal.TetraMaster
 {
@@ -44,6 +45,7 @@ namespace Crystal.TetraMaster
         private bool isReady = false;
         private bool isAuthenticated = false;
         private bool AuthError = false;
+        private volatile bool ConnectFailed = false;
 
         private string ConsoleName;
 
@@ -60,9 +62,31 @@ namespace Crystal.TetraMaster
             ConsoleName = consoleName;
         }
 
+        // Blocks until authenticated, retrying so the minigame POL-Auth can be started in any order
+        public void ConnectAndAuthenticate(string host, int port)
+        {
+            while (true)
+            {
+                Connect(host, port);
+                while (!isAuthenticated && !AuthError && !ConnectFailed)
+                    Thread.Sleep(50);
+
+                if (isAuthenticated)
+                    return;
+
+                if (ConnectFailed)
+                    ClientSocket.Close();
+                Program.Log.Warn($"[{ConsoleName}] - could not authenticate with POL-Auth at {host}:{port}, retrying in 5s...");
+                Thread.Sleep(5000);
+            }
+        }
+
         public bool Connect(string host, int port)
         {
             AuthError = false;
+            ConnectFailed = false;
+            isAdminData = isReady = isAuthenticated = false;
+            CurrentCrypto = null;
 
             if (!IPAddress.TryParse(host, out IPAddress address))
             {
@@ -193,7 +217,7 @@ namespace Crystal.TetraMaster
             CurrentCrypto = new SqCrypto(blowfishKey, modulus);
             isReady = true;
 
-            string passwordMD5 = SqCrypto.GeneratePOLPasswordMD5(InitInfoBase32, Password);
+            string passwordMD5 = SqCrypto.GeneratePOLPasswordMD5(InitInfoBase32, Encoding.ASCII.GetBytes(Password ?? ""));
 
             SendLine($"NICK :{SqCrypto.ScramblePolId(SqCrypto.PolIdToPolProData(PolId))}:{passwordMD5}:BotBotBot");
         }
@@ -356,6 +380,7 @@ namespace Crystal.TetraMaster
             }
             catch
             {
+                ConnectFailed = true;
                 Program.Log.Info($"[{ConsoleName}] - 0x{Mg.TmKey(PolId):X16} - failed connection to POL-Auth");
             }
         }

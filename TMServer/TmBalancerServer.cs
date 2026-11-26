@@ -19,7 +19,6 @@ along with Project Crystal Server. If not, see <https://www.gnu.org/licenses/>.
 ===========================================================================
 */
 
-using Crystal.POLAuth;
 using System;
 using System.Runtime.InteropServices;
 using Crystal.TetraMaster.Packets;
@@ -46,26 +45,8 @@ namespace Crystal.TetraMaster
         {
             Program.Log.Info("!!!Tetra Master Load Balancer is starting!!!");
             Program.Log.Info("Connecting notify interface client...");
-            PolGameChannel.Connect("127.0.0.1", MgConstants.MG_IRC_PORT);
-            PolProfileChannel.Connect("127.0.0.1", MgConstants.MG_IRC_PORT);
-
-            while (!PolGameChannel.IsAuthenticated())
-            {
-                if (PolGameChannel.AuthenticationFailed())
-                {
-                    Program.Log.Error("The game irc client could not connect to the auth server. Check settings!!!");
-                    Environment.Exit(1);
-                }
-            }
-
-            while (!PolProfileChannel.IsAuthenticated())
-            {
-                if (PolProfileChannel.AuthenticationFailed())
-                {
-                    Program.Log.Error("The profile irc client could not connect to the auth server. Check settings!!!");
-                    Environment.Exit(1);
-                }
-            }
+            PolGameChannel.ConnectAndAuthenticate("127.0.0.1", MgConstants.MG_IRC_PORT);
+            PolProfileChannel.ConnectAndAuthenticate("127.0.0.1", MgConstants.MG_IRC_PORT);
         }
 
         private void OnReceiveMessage(string from, string data)

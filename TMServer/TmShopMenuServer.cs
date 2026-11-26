@@ -62,14 +62,7 @@ namespace Crystal.TetraMaster
                 zone.Init();
 
             // Open Game Channel
-            PolShopMenuChannel.Connect("127.0.0.1", 51241);
-            while (!PolShopMenuChannel.IsAuthenticated())
-            {
-                if (PolShopMenuChannel.AuthenticationFailed())
-                {
-                    return false;
-                }
-            }
+            PolShopMenuChannel.ConnectAndAuthenticate("127.0.0.1", MgConstants.MG_IRC_PORT);
             return true;
         }
 

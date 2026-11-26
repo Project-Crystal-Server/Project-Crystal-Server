@@ -25,6 +25,7 @@ using System;
 using System.Net;
 using System.Net.Sockets;
 using System.Text;
+using System.Threading;
 
 namespace Crystal.Mahjong
 {
@@ -41,6 +42,7 @@ namespace Crystal.Mahjong
         private bool isReady = false;
         private bool isAuthenticated = false;
         private bool authError = false;
+        private volatile bool connectFailed = false;
 
         private string ConsoleName;
 
@@ -57,9 +59,31 @@ namespace Crystal.Mahjong
             ConsoleName = consoleName;
         }
 
+        // Blocks until authenticated, retrying so the minigame POL-Auth can be started in any order
+        public void ConnectAndAuthenticate(string host, int port)
+        {
+            while (true)
+            {
+                Connect(host, port);
+                while (!isAuthenticated && !authError && !connectFailed)
+                    Thread.Sleep(50);
+
+                if (isAuthenticated)
+                    return;
+
+                if (connectFailed)
+                    clientSocket.Close();
+                Program.Log.Warn($"[{ConsoleName}] - could not authenticate with POL-Auth at {host}:{port}, retrying in 5s...");
+                Thread.Sleep(5000);
+            }
+        }
+
         public bool Connect(string host, int port)
         {
             authError = false;
+            connectFailed = false;
+            isAdminData = isReady = isAuthenticated = false;
+            currentCrypto = null;
 
             if (!IPAddress.TryParse(host, out IPAddress address))
             {
@@ -351,6 +375,7 @@ namespace Crystal.Mahjong
             }
             catch
             {
+                connectFailed = true;
                 Program.Log.Info($"[{ConsoleName}] - 0x{Mg.MjKey(polId):X16} - failed connection to POL-Auth");
             }
         }

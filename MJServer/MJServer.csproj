@@ -2,38 +2,75 @@
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
-    <TargetFramework>net8.0</TargetFramework>
+    <TargetFramework>net10.0</TargetFramework>
     <RootNamespace>Crystal.Mahjong</RootNamespace>
-    <OutputPath>$(SolutionDir)\Build\Jangho\$(Configuration)\</OutputPath>
-	<AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
-    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-	<Platforms>AnyCPU;x86;x64</Platforms>
-	<Configurations>Debug;Release</Configurations>
+    <OutputPath>$(SolutionDir)\Build\$(Configuration)\MJServer\</OutputPath>
+    <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+
+    <Platforms>AnyCPU;x86;x64</Platforms>
+    <Configurations>Debug;Release</Configurations>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x86'">
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x86'">
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="MySqlConnector" Version="3.0.0" />
+    <EmbeddedResource Include="NLog.config" />
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\POLAuth\POLAuth.csproj" />
+    <PackageReference Include="MySqlConnector" Version="3.0.0" />
+    <PackageReference Include="NLog" Version="6.2.2" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\POLCommon\Common Class Lib.csproj" />
   </ItemGroup>
 
-  <Target Name="PostBuild" AfterTargets="PostBuildEvent">
-    <Exec Command="xcopy /y $(SolutionDir)NLog.config $(OutDir)" />
+  <Target Name="ForceLowercaseBinary" AfterTargets="Publish" Outputs="ForceExecution">
+
+    <PropertyGroup>
+      <CurrentWorkingDir Condition="'$(PublishDir)' != ''">$(PublishDir)</CurrentWorkingDir>
+      <CurrentWorkingDir Condition="'$(PublishDir)' == ''">$(OutputPath)</CurrentWorkingDir>
+
+      <NormalizedDir Condition="!HasTrailingSlash('$(CurrentWorkingDir)')">$(CurrentWorkingDir)\</NormalizedDir>
+      <NormalizedDir Condition="HasTrailingSlash('$(CurrentWorkingDir)')">$(CurrentWorkingDir)</NormalizedDir>
+
+      <SrcExe>$(NormalizedDir)$(TargetName).exe</SrcExe>
+      <DstExe>$(NormalizedDir)$(TargetName.ToLower()).exe</DstExe>
+
+      <SrcLinux>$(NormalizedDir)$(TargetName)</SrcLinux>
+      <DstLinux>$(NormalizedDir)$(TargetName.ToLower())</DstLinux>
+    </PropertyGroup>
+
+    <Move Condition="Exists('$(SrcExe)')" SourceFiles="$(SrcExe)" DestinationFiles="$(DstExe)" OverwriteReadOnlyFiles="true" />
+    <Move Condition="Exists('$(SrcLinux)')" SourceFiles="$(SrcLinux)" DestinationFiles="$(DstLinux)" OverwriteReadOnlyFiles="true" />
+
+    <Message Importance="Normal" Text="[POST-BUILD] Renamed to lowercase: $(NormalizedDir)" />
   </Target>
 
 </Project>

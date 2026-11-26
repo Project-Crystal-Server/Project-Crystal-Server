@@ -255,8 +255,7 @@ namespace Crystal.TetraMaster.Models
             PolFileSys.CloseFile(file);
 
             // Start IRC Client
-            IrcClient.Connect("127.0.0.1", MgConstants.MG_IRC_PORT);
-            while (!IrcClient.IsAuthenticated()) ;
+            IrcClient.ConnectAndAuthenticate("127.0.0.1", MgConstants.MG_IRC_PORT);
             //IrcClient.JoinChannel(IrcChannel, channelName => Program.Log.Info($"[{Name}] joined {channelName}"));
 
             for (int i = 0; i < Tables.Length; i++)
