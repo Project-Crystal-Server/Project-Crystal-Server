@@ -24,6 +24,7 @@ using Crystal.Common.PolFileSystem;
 using NLog;
 using System;
 using System.IO;
+using System.Text;
 using System.Threading;
 
 namespace Crystal.TetraMaster
@@ -37,6 +38,11 @@ namespace Crystal.TetraMaster
 
         static void Main(string[] args)
         {
+            // Setup Base DIR
+            string baseDir = Path.GetDirectoryName(Environment.ProcessPath) ?? AppContext.BaseDirectory;
+            Directory.SetCurrentDirectory(baseDir);
+            Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
+
             // Load NLog Config
             using var nlogStream = typeof(Program).Assembly.GetManifestResourceStream("Crystal.TetraMaster.NLog.config");
             using var nlogReader = new StreamReader(nlogStream);
@@ -47,7 +53,12 @@ namespace Crystal.TetraMaster
             Log.Info("===================");
 
             Mg.Init("TM0");
-            PolFileSys.Init("D:\\Coding\\project-crystal-server\\Build\\POLProfile\\Debug\\profile_data");
+
+            // Config Load
+            TetraMasterConfig config = LoadConfig(args);
+            if (config == null)
+                return;
+            PolFileSys.Init(config.ProfileDir);
 
             // Args
             ProcessArgs(args, out bool startBalancer, out bool startShopMenuServer);
@@ -80,6 +91,44 @@ namespace Crystal.TetraMaster
 
                 Thread.Sleep(500);
             }
+        }
+
+        static TetraMasterConfig LoadConfig(string[] args)
+        {
+            // Get path if exists
+            string cfgPath = "./tm.cfg";
+            for (int i = 0; i < args.Length; i++)
+            {
+                if (args[i].ToLower().Equals("--config") && args.Length > i + 1)
+                {
+                    cfgPath = args[i + 1];
+                    break; 
+                }
+            }
+
+            // Load and perform checks for mandatory fields
+            TetraMasterConfig config;
+            try
+            {
+                config = new(cfgPath);
+            }
+            catch (Exception e)
+            {
+                Console.ForegroundColor = ConsoleColor.Red;
+                Log.Error($"Could not load the config: {e.Message}");
+                Console.ForegroundColor = ConsoleColor.Gray;
+                return null;
+            }
+
+            if (config.ProfileDir == null)
+            {
+                Console.ForegroundColor = ConsoleColor.Red;
+                Log.Error("Config: Profile directory was not set.");
+                Console.ForegroundColor = ConsoleColor.Gray;
+                return null;
+            }
+
+            return config;
         }
 
         private static void ProcessArgs(string[] args, out bool startBalancer, out bool startShopMenuServer)
