@@ -140,7 +140,7 @@ namespace Crystal.TetraMaster.Models
                     MgPlayer player = lobbyPacket.GetCmd("DE").GetPlayer();
                     PlayerUpdate(player, true);
 
-                    string dsResponse = new MgPacketBuilder(PacketType.Lobby).AddCommand("DS", Mg.CryptPolId(Id)).Build();
+                    string dsResponse = new MgPacketBuilder(PacketType.Lobby).AddCommand("DS", Id).Build();
                     IrcClient.Notice(from, dsResponse);
                 }
                 // PTL Update Data Request
@@ -276,7 +276,7 @@ namespace Crystal.TetraMaster.Models
             if (isNew)
                 PlayerFile.InsertNewEntry(data);
             else
-                PlayerFile.UpdateEntryWithId(Mg.CryptPolId(player.Id), data);
+                PlayerFile.UpdateEntryWithId(player.Id, data);
 
             // Add to the update list
             var pdUpdCommand = player.ToUpdCmd();
@@ -289,11 +289,11 @@ namespace Crystal.TetraMaster.Models
         {
             // Remove player from list
             Users.Remove(player);
-            PlayerFile.DeleteEntryWithId(Mg.CryptPolId(player.Id));
+            PlayerFile.DeleteEntryWithId(player.Id);
 
             // Add to the update list
             var pcUpdCommand = new MgPacketBuilder()
-                .AddCommand("PC", Mg.CryptPolId(player.Id))
+                .AddCommand("PC", player.Id)
                 .Build();
             AddUpd(pcUpdCommand);
 
@@ -305,7 +305,7 @@ namespace Crystal.TetraMaster.Models
             // Update file entry
             var tableEntry = TableFileEntry.Create(table);
             var data = MemoryMarshal.Cast<TableFileEntry, byte>(new ReadOnlySpan<TableFileEntry>(tableEntry));
-            TableFile.UpdateEntryWithId(Mg.CryptPolId(table.Id), data);
+            TableFile.UpdateEntryWithId(table.Id, data);
 
             // Add to the update list
             var tdUpdCommand = table.ToUpdCmd();
@@ -359,7 +359,7 @@ namespace Crystal.TetraMaster.Models
                 IrcChannel = IrcChannel
             };
             ReadOnlySpan<byte> data = MemoryMarshal.Cast<RoomFileEntry, byte>(new ReadOnlySpan<RoomFileEntry>(roomEntry));
-            RoomListFile.UpdateEntryWithId(Mg.CryptPolId(Id), data);
+            RoomListFile.UpdateEntryWithId(Id, data);
 
             // Tell the zone to do the same
             ParentZone.UpdatePlayerCount();

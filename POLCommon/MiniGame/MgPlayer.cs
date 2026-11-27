@@ -76,7 +76,7 @@ namespace Crystal.Common.MiniGame
         {
             string gameData = Encoding.ASCII.GetString(GameData).Replace("\0", "");
             return new MgPacketBuilder()
-               .AddCommand("PD", Mg.CryptPolId(Id), GameId, Domain, Volume, Name, Class, EnterTime, Level, Rating, Mg.CryptPolId(RoomId), gameData)
+               .AddCommand("PD", Id, GameId, Domain, Volume, Name, Class, EnterTime, Level, Rating, RoomId, gameData)
                .Build();
         }
     }

@@ -159,7 +159,7 @@ namespace Crystal.Common.MiniGame.Packets
             return null;
         }
 
-        // POL ID, converted from the form the game client uses
+        // POL ID
         public bool GetParamId(int index, out ulong result)
         {
             result = 0;

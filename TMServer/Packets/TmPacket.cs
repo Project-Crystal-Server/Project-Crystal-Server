@@ -130,7 +130,7 @@ namespace Crystal.TetraMaster.Packets
                 return null;
             }
 
-            // POL ID, converted from the form the game client uses
+            // POL ID
             public bool GetParamId(string param, int index, out ulong result)
             {
                 result = 0;

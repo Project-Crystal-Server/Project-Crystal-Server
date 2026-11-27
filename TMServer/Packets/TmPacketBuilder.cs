@@ -98,7 +98,7 @@ namespace Crystal.TetraMaster.Packets
             return this;
         }
 
-        // POL IDs, converted to the form the game client uses
+        // POL ID
         public TmGameCommandBuilder ParamId(string name, params ulong[] polIds)
         {
             object[] values = new object[polIds.Length];

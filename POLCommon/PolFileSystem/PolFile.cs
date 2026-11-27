@@ -19,6 +19,7 @@ along with Project Crystal Server. If not, see <https://www.gnu.org/licenses/>.
 ===========================================================================
 */
 
+using Crystal.Common.MiniGame;
 using System;
 using System.Diagnostics;
 using System.IO;
@@ -27,6 +28,8 @@ namespace Crystal.Common.PolFileSystem
 {
     public class PolFile
     {
+        private const ulong DELETED_ID = 0xFFFFFFFFFFFFFFFF;
+
         private object LockObj;
         public readonly string FilePath;
         public uint NumEntries;
@@ -104,13 +107,15 @@ namespace Crystal.Common.PolFileSystem
                 {
                     using (file = File.Open(FilePath, FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.ReadWrite))
                     { 
-                        file.Seek(DataOffset, SeekOrigin.Begin);
+                        byte[] idBytes = new byte[8];
                         for (int i = 0; i < MaxEntries; i++)
                         {
-                            int peek = file.ReadByte();
-                            file.Seek(-1, SeekOrigin.Current);
-                            if (peek == 0)
+                            file.Seek(DataOffset + (i * EntrySize), SeekOrigin.Begin);
+                            int read = file.Read(idBytes);
+                            ulong id = read == 8 ? BitConverter.ToUInt64(idBytes) : 0;
+                            if (id == 0 || id == DELETED_ID)
                             {
+                                file.Seek(-read, SeekOrigin.Current);
                                 file.Write(data.ToArray(), 0, EntrySize);
                                 if (CountOffset != -1)
                                 {
@@ -119,7 +124,6 @@ namespace Crystal.Common.PolFileSystem
                                 }
                                 break;
                             }
-                            file.Seek(EntrySize, SeekOrigin.Current);
                         }
                     }
                 }
@@ -169,17 +173,18 @@ namespace Crystal.Common.PolFileSystem
 
         public bool UpdateEntryWithId(ulong polId, ReadOnlySpan<byte> data)
         {
+            polId = Mg.CryptPolId(polId);
             byte[] idBytes = new byte[8];
             FileStream file = null;
             try
             {
                 lock (LockObj)
                 {
-                    using (file = File.Open(FilePath, FileMode.Open, FileAccess.Write, FileShare.ReadWrite))
+                    using (file = File.Open(FilePath, FileMode.Open, FileAccess.ReadWrite, FileShare.ReadWrite))
                     {
-                        file.Seek(DataOffset, SeekOrigin.Begin);
-                        for (int i = 0; i < NumEntries; i++)
+                        for (int i = 0; i < MaxEntries; i++)
                         {
+                            file.Seek(DataOffset + (i * EntrySize), SeekOrigin.Begin);
                             file.ReadExactly(idBytes);
                             if (BitConverter.ToUInt64(idBytes) == polId)
                             {
@@ -187,7 +192,6 @@ namespace Crystal.Common.PolFileSystem
                                 file.Write(data.ToArray(), 0, EntrySize);
                                 break;
                             }
-                            file.Seek(EntrySize, SeekOrigin.Current);
                         }
                     }
                 }
@@ -230,22 +234,24 @@ namespace Crystal.Common.PolFileSystem
 
         public bool DeleteEntryWithId(ulong polId)
         {
-            byte[] idBytes = BitConverter.GetBytes((long)-1);
+            polId = Mg.CryptPolId(polId);
+            byte[] idBytes = new byte[8];
+            byte[] deletedMarker = BitConverter.GetBytes(DELETED_ID);
             FileStream file = null;
             try
             {
                 lock (LockObj)
                 {
-                    using (file = File.Open(FilePath, FileMode.Open, FileAccess.Write, FileShare.ReadWrite))
+                    using (file = File.Open(FilePath, FileMode.Open, FileAccess.ReadWrite, FileShare.ReadWrite))
                     {
-                        file.Seek(DataOffset, SeekOrigin.Begin);
-                        for (int i = 0; i < NumEntries; i++)
+                        for (int i = 0; i < MaxEntries; i++)
                         {
+                            file.Seek(DataOffset + (i * EntrySize), SeekOrigin.Begin);
                             file.ReadExactly(idBytes);
                             if (BitConverter.ToUInt64(idBytes) == polId)
                             {
                                 file.Seek(-8, SeekOrigin.Current);
-                                file.Write(idBytes);
+                                file.Write(deletedMarker);
                                 if (CountOffset != -1)
                                 {
                                     file.Seek(CountOffset, SeekOrigin.Begin);
@@ -253,7 +259,6 @@ namespace Crystal.Common.PolFileSystem
                                 }
                                 break;
                             }
-                            file.Seek(EntrySize, SeekOrigin.Current);
                         }
                     }
                 }

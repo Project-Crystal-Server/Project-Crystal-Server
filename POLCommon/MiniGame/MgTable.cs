@@ -52,7 +52,7 @@ namespace Crystal.Common.MiniGame
         {
             string gameData = Encoding.ASCII.GetString(GameData).Replace("\0", "");
             return new MgPacketBuilder()
-               .AddCommand("TD", IrcChannel, IsValidUnk, Mg.CryptPolId(Id), State, Unk1, NumMembers, gameData)
+               .AddCommand("TD", IrcChannel, IsValidUnk, Id, State, Unk1, NumMembers, gameData)
                .Build();
         }
     }
