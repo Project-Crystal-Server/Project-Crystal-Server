@@ -19,6 +19,7 @@ along with Project Crystal Server. If not, see <https://www.gnu.org/licenses/>.
 ===========================================================================
 */
 
+using Crystal.Common.MiniGame;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -95,6 +96,15 @@ namespace Crystal.TetraMaster.Packets
             }
 
             return this;
+        }
+
+        // POL IDs, converted to the form the game client uses
+        public TmGameCommandBuilder ParamId(string name, params ulong[] polIds)
+        {
+            object[] values = new object[polIds.Length];
+            for (int i = 0; i < polIds.Length; i++)
+                values[i] = Mg.CryptPolId(polIds[i]);
+            return Param(name, values);
         }
 
         public TmGameCommandBuilder ParamHexStr(string name, params string[] value)

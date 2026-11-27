@@ -24,6 +24,7 @@ using System.Runtime.InteropServices;
 using Crystal.TetraMaster.Packets;
 using Crystal.Common.MiniGame;
 using Crystal.Common.MiniGame.Packets;
+using Crystal.Common.PolClient;
 using Crystal.Common.PolFileSystem;
 using Crystal.TetraMaster.Models;
 using static Crystal.TetraMaster.TmConstants;
@@ -37,8 +38,8 @@ namespace Crystal.TetraMaster
 
         public TmBalancerServer()
         {
-            PolGameChannel = new("Tm-Balancer", Mg.TmKey(TmConstants.BALANCER_POLID), OnReceiveMessage);
-            PolProfileChannel = new("Tm-Profile", Mg.TmKey(TmConstants.PROFILE_POLID), OnReceiveMessageProfile);
+            PolGameChannel = new("Tm-Balancer", TmConstants.BALANCER_POLID, OnReceiveMessage);
+            PolProfileChannel = new("Tm-Profile", TmConstants.PROFILE_POLID, OnReceiveMessageProfile);
         }
 
         public void StartServer()
@@ -70,7 +71,7 @@ namespace Crystal.TetraMaster
                             .Param("V", BALANCER_VOLUME)
                             .Param("AC", AUCTION_DOMAIN, AUCTION_VOLUME)
                             .Param("RK", RANK_DOMAIN, RANK_VOLUME)
-                            .Param("Shm", Mg.TmKey(SHOPMENU_POLID), SHOPMENU_DOMAIN, SHOPMENU_VOLUME)
+                            .Param("Shm", Mg.CryptPolId(SHOPMENU_POLID), SHOPMENU_DOMAIN, SHOPMENU_VOLUME)
                             .End()
                         ).Build();
                     PolGameChannel.Notice(from, teachDVAns);

@@ -74,7 +74,7 @@ namespace Crystal.TetraMaster
 
             if (startShopMenuServer)
             {
-                ShopMenuServer = new TmShopMenuServer(Mg.TmKey(TmConstants.SHOPMENU_POLID), TmConstants.SHOPMENU_DOMAIN, TmConstants.SHOPMENU_VOLUME);
+                ShopMenuServer = new TmShopMenuServer(TmConstants.SHOPMENU_POLID, TmConstants.SHOPMENU_DOMAIN, TmConstants.SHOPMENU_VOLUME);
                 ShopMenuServer.StartServer();
             }
 

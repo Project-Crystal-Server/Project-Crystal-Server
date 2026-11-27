@@ -22,6 +22,7 @@ along with Project Crystal Server. If not, see <https://www.gnu.org/licenses/>.
 using Crystal.Common;
 using Crystal.Common.MiniGame;
 using Crystal.Common.MiniGame.Packets;
+using Crystal.Common.PolClient;
 using Crystal.Mahjong.Packets;
 using Crystal.Mahjong.Packets.GamePackets;
 using Crystal.Mahjong.Packets.GamePackets.Receive;
@@ -60,19 +61,16 @@ namespace Crystal.Mahjong.Models
 
         public ulong CreateTableId(ulong roomId, uint tableNumber)
         {
-            ulong roomIdDecrypted = Mg.MjKey(roomId);
-            char[] polIdData = SqCrypto.PolIdToPolProData(roomIdDecrypted).ToCharArray();
+            char[] polIdData = SqCrypto.PolIdToPolProData(roomId).ToCharArray();
             char[] hex = (tableNumber + 1).ToString("X2").ToCharArray();
             polIdData[6] = hex[0];
             polIdData[7] = hex[1];
-            ulong tableId = SqCrypto.PolProDataToPolId(new(polIdData), 0, 3);
-            return Mg.MjKey(tableId);
+            return SqCrypto.PolProDataToPolId(new(polIdData), 0, 3);
         }
 
         public string CreateIrcChannel(ulong tableId)
         {   
-            ulong tableIdDecrypted = Mg.MjKey(tableId);
-            string strPolData = SqCrypto.PolIdToPolProData(tableIdDecrypted);
+            string strPolData = SqCrypto.PolIdToPolProData(tableId);
             return $"#TABLE{strPolData.Substring(2)}";
         }
 
@@ -83,7 +81,7 @@ namespace Crystal.Mahjong.Models
             IrcChannel = CreateIrcChannel(Id);
             TableLobbyChannel = new PolIrcClient($"Mj-Table-{Number}", Id, OnReceiveMsg);
 
-            ParentRoomIrcId = SqCrypto.PolIdToPolProData(Mg.MjKey(roomId));
+            ParentRoomIrcId = SqCrypto.PolIdToPolProData(roomId);
 
             ResetTable();
             UpdateTable();
@@ -132,7 +130,7 @@ namespace Crystal.Mahjong.Models
 
                         // Add player
                         byte answer;
-                        TablePlayer enteringPlayer = new TablePlayer(playReq.PlayerId, playReq.PlayerName, 1, 1, 1);
+                        TablePlayer enteringPlayer = new TablePlayer(Mg.CryptPolId(playReq.PlayerId), playReq.PlayerName, 1, 1, 1);
                         if (enteringPlayer != null)
                             answer = (byte) AddPlayer(enteringPlayer);
                         else
@@ -149,7 +147,7 @@ namespace Crystal.Mahjong.Models
                         MemoryMarshal.Write(reserveAckBytes, ref reserveAck);
                         MjPacket responsePkt = new(
                             0,
-                            target: Mg.MjKey(SqCrypto.PolProDataToPolId(from, 0, 0)),
+                            target: Mg.CryptPolId(SqCrypto.PolProDataToPolId(from, 0, 0)),
                             command: MjConstants.Opcodes.MjRESERVEACK,
                             fifoChan: gamePkt.Header.fifoChannel,
                             seq: gamePkt.Header.SequenceNum,
@@ -172,7 +170,7 @@ namespace Crystal.Mahjong.Models
 
                         MjPacket responsePkt3 = new(
                             0,
-                            target: Mg.MjKey(SqCrypto.PolProDataToPolId(from, 0, 0)),
+                            target: Mg.CryptPolId(SqCrypto.PolProDataToPolId(from, 0, 0)),
                             command: MjConstants.Opcodes.MjRESERVEACK,
                             fifoChan: gamePkt.Header.fifoChannel,
                             seq: gamePkt.Header.SequenceNum,
@@ -191,7 +189,7 @@ namespace Crystal.Mahjong.Models
 
                         MjPacket responsePkt2 = new(
                             0,
-                            target: Mg.MjKey(SqCrypto.PolProDataToPolId(from, 0, 0)),
+                            target: Mg.CryptPolId(SqCrypto.PolProDataToPolId(from, 0, 0)),
                             command: MjConstants.Opcodes.MjMASTERCMDACK,
                             fifoChan: gamePkt.Header.fifoChannel,
                             seq: gamePkt.Header.SequenceNum,
@@ -227,7 +225,7 @@ namespace Crystal.Mahjong.Models
 
             UpdateGameDataBuffer();
             SendMemberListToTable();
-            if (TableLobbyChannel.IsReady())
+            if (TableLobbyChannel.IsCryptoReady())
                 SendUpdateMsgToRoom();
         }
 

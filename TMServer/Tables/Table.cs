@@ -25,6 +25,7 @@ using static Crystal.TetraMaster.Packets.TmPacket;
 using Crystal.TetraMaster.TmGame;
 using Crystal.Common.MiniGame;
 using Crystal.Common.MiniGame.Packets;
+using Crystal.Common.PolClient;
 
 namespace Crystal.TetraMaster.Tables
 {
@@ -57,19 +58,16 @@ namespace Crystal.TetraMaster.Tables
 
         public ulong CreateTableId(ulong roomId, uint tableNumber)
         {
-            ulong roomIdDecrypted = Mg.TmKey(roomId);
-            char[] polIdData = SqCrypto.PolIdToPolProData(roomIdDecrypted).ToCharArray();
+            char[] polIdData = SqCrypto.PolIdToPolProData(roomId).ToCharArray();
             char[] hex = (tableNumber + 1).ToString("X2").ToCharArray();
             polIdData[6] = hex[0];
             polIdData[7] = hex[1];
-            ulong tableId = SqCrypto.PolProDataToPolId(new(polIdData), 0, 0);
-            return Mg.TmKey(tableId);
+            return SqCrypto.PolProDataToPolId(new(polIdData), 0, 0);
         }
 
         public string CreateIrcChannel(ulong tableId)
         {
-            ulong tableIdDecrypted = Mg.TmKey(tableId);
-            string strPolData = SqCrypto.PolIdToPolProData(tableIdDecrypted);
+            string strPolData = SqCrypto.PolIdToPolProData(tableId);
             return $"#TABLE{strPolData.Substring(2)}";
         }
 
@@ -90,7 +88,7 @@ namespace Crystal.TetraMaster.Tables
 
             ForcedRules = rules;
 
-            ParentRoomIrcId = SqCrypto.PolIdToPolProData(Mg.TmKey(roomId));
+            ParentRoomIrcId = SqCrypto.PolIdToPolProData(roomId);
 
             Utils.ClrASCII(StaticAsciiData);
             ResetTable();
@@ -123,8 +121,7 @@ namespace Crystal.TetraMaster.Tables
             if (mgPacket.Type == PacketType.Game)
             {
                 TmPacket packet = new(mgPacket.GetGamePacketData());
-                ulong tableIdDecrypted = Mg.TmKey(Id);
-                string strPolData = SqCrypto.PolIdToPolProData(tableIdDecrypted);
+                string strPolData = SqCrypto.PolIdToPolProData(Id);
                 Program.Log.Info($"Table {strPolData} got msg: {data}");
                     
                 //Game Opcodes
@@ -145,7 +142,6 @@ namespace Crystal.TetraMaster.Tables
                     // Grab User
                     TmGameCommand init = packet.GetCommand("GameEN");
                     init.GetParamId("NN", 0, out ulong playerPolId);
-                    playerPolId = Mg.TmKey(playerPolId);
                     init.GetParamNumber("HID", 0, out int hid);
                     init.GetParamNumber("Dm", 0, out int domain);
                     init.GetParamNumber("Vol", 0, out int volume);
@@ -184,7 +180,6 @@ namespace Crystal.TetraMaster.Tables
                     // Grab User
                     TmGameCommand init = packet.GetCommand("GameENC");
                     init.GetParamId("NN", 0, out ulong playerPolId);
-                    playerPolId = Mg.TmKey(playerPolId);
                     init.GetParamNumber("HID", 0, out int hid);
                     init.GetParamNumber("Dm", 0, out int domain);
                     init.GetParamNumber("Vol", 0, out int volume);
@@ -235,7 +230,7 @@ namespace Crystal.TetraMaster.Tables
 
                     for (int i = 1; i < NumMembers; i++)
                     {
-                        var target = SqCrypto.PolIdToPolProData(Mg.TmKey(Members[i].Id));
+                        var target = SqCrypto.PolIdToPolProData(Members[i].Id);
                         var startGameMsg = new TmPacketBuilder(0x41, 0x07, 0x00).Build();
                         TableLobbyChannel.Notice(target, startGameMsg);
                     }
@@ -363,7 +358,7 @@ namespace Crystal.TetraMaster.Tables
 
                     if (!isKicked)
                     {
-                        ulong requestingPlayerId = Mg.TmKey(SqCrypto.PolProDataToPolId(from, 0, 0));
+                        ulong requestingPlayerId = SqCrypto.PolProDataToPolId(from, 0, 0);
                         quitAnswer = RemovePlayer(requestingPlayerId);
                     }
                     else
@@ -414,7 +409,7 @@ namespace Crystal.TetraMaster.Tables
 
             UpdateStaticASCII();
             SendMemberListToTable();
-            if (TableLobbyChannel.IsReady())
+            if (TableLobbyChannel.IsCryptoReady())
                 SendUpdateMsgToRoom();
         }
 
@@ -424,7 +419,7 @@ namespace Crystal.TetraMaster.Tables
             Utils.SetASCIINum(StaticAsciiData, IsReady() ? 1UL : 0UL, 4, 1);
             Utils.SetASCIINum(StaticAsciiData, NumMembers, 5, 1);
             Utils.SetASCIIStr(StaticAsciiData, Restrictions?.Password ?? "********", 6, 0x9);
-            Utils.SetASCIINum(StaticAsciiData, MasterPolId, 0xE, 0x10);
+            Utils.SetASCIINum(StaticAsciiData, Mg.CryptPolId(MasterPolId), 0xE, 0x10);
             Utils.SetASCIINum(StaticAsciiData, Rules?.Wager ?? 0, 0x1E, 0x4);
             Utils.SetASCIINum(StaticAsciiData, Rules?.GetBitfield() ?? 0, 0x22, 0x2);
             Utils.SetASCIINum(StaticAsciiData, Rules?.QuitMode ?? 0, 0x24, 0x1);
@@ -443,7 +438,7 @@ namespace Crystal.TetraMaster.Tables
         {
             for (int i = 0; i < NumMembers; i++)
             {
-                string target = SqCrypto.PolIdToPolProData(Mg.TmKey(Members[i].Id));
+                string target = SqCrypto.PolIdToPolProData(Members[i].Id);
                 SendMemberList(target);
             }
         }
@@ -469,10 +464,10 @@ namespace Crystal.TetraMaster.Tables
         {
             for (int i = 0; i < NumMembers; i++)
             {
-                string target = SqCrypto.PolIdToPolProData(Mg.TmKey(Members[i].Id));
+                string target = SqCrypto.PolIdToPolProData(Members[i].Id);
                 string kickMsg = new TmPacketBuilder(0x41, 0x0C, 0x00)
                             .Command(new TmGameCommandBuilder("GameKick")
-                                .Param("Kick", kickedId)
+                                .ParamId("Kick", kickedId)
                                 .ParamHexStr("FN", masterName)
                                 .ParamHexStr("QN", kickedName)
                                 .End()
@@ -483,10 +478,10 @@ namespace Crystal.TetraMaster.Tables
 
         private void SendGameOwnerToNewMaster(string oldMaster)
         {
-            string target = SqCrypto.PolIdToPolProData(Mg.TmKey(Members[0].Id));
+            string target = SqCrypto.PolIdToPolProData(Members[0].Id);
             string gameOwnerMsg = new TmPacketBuilder(0x1A, 0x00, 0x00)
                         .Command(new TmGameCommandBuilder("GameOwner")
-                            .Param("NN", Members[0].Id)
+                            .ParamId("NN", Members[0].Id)
                             .ParamHexStr("CN", Members[0].Name)
                             .ParamHexStr("QN", oldMaster)
                             .End()
@@ -496,7 +491,7 @@ namespace Crystal.TetraMaster.Tables
 
         public void Test()
         {
-            string target = SqCrypto.PolIdToPolProData(Mg.TmKey(Members[1].Id));
+            string target = SqCrypto.PolIdToPolProData(Members[1].Id);
             string testMsg = new TmPacketBuilder(0x41, 0x07, 0x00).Build();
             //string testMsg = new TmPacketBuilder(0x2b, 0x00, 0x00).Build();
             TableLobbyChannel.Notice(target, testMsg);
@@ -535,11 +530,11 @@ namespace Crystal.TetraMaster.Tables
             TmGameCommandBuilder gameMlCommand = new TmGameCommandBuilder("GameML");
 
             if (targetPlayerId != 0)
-                gameMlCommand.Param("ID", targetPlayerId);
+                gameMlCommand.ParamId("ID", targetPlayerId);
             gameMlCommand.Param("Num", NumMembers);
 
             string[] names = new string[NumMembers];
-            object[] ids = new object[NumMembers];
+            ulong[] ids = new ulong[NumMembers];
             object[] pos = new object[NumMembers];
             object[] lvs = new object[NumMembers];
             object[] rks = new object[NumMembers];
@@ -556,7 +551,7 @@ namespace Crystal.TetraMaster.Tables
             }
 
             gameMlCommand.ParamHexStr("MLNN", names)
-                         .Param("MLID", ids)
+                         .ParamId("MLID", ids)
                          .Param("Po", pos)
                          .Param("Lv", lvs)
                          .Param("Rk", rks)

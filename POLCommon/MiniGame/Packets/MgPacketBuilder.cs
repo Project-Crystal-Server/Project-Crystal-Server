@@ -96,12 +96,12 @@ namespace Crystal.Common.MiniGame.Packets
 
         public MgPacketBuilder AddPlayer(MgPlayer player)
         {
-            return AddCommand("PD", player.Id, player.GameId, player.Domain, player.Volume, player.Name, 2, player.EnterTime, player.Level, player.Rating, player.RoomId, player.GameData);
+            return AddCommand("PD", Mg.CryptPolId(player.Id), player.GameId, player.Domain, player.Volume, player.Name, 2, player.EnterTime, player.Level, player.Rating, Mg.CryptPolId(player.RoomId), player.GameData);
         }
 
         public MgPacketBuilder AddTable(MgTable table)
         {
-            return AddCommand("TD", table.IrcChannel, 0, table.Id, table.State, 0, 0, Encoding.ASCII.GetString(table.GameData).Replace("\0", ""));
+            return AddCommand("TD", table.IrcChannel, 0, Mg.CryptPolId(table.Id), table.State, 0, 0, Encoding.ASCII.GetString(table.GameData).Replace("\0", ""));
         }
 
         public MgPacketBuilder AddRaw(string raw)

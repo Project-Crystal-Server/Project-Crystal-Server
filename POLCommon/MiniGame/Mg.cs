@@ -26,6 +26,7 @@ namespace Crystal.Common.MiniGame
     public class Mg
     {
         internal static string GameCode = "@@@";
+        private static bool IsInitialized = false;
 
         public static Encoding Encoding = Encoding.GetEncoding("Shift_JIS");
 
@@ -33,6 +34,19 @@ namespace Crystal.Common.MiniGame
         {
             Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
             GameCode = gameCode;
+            IsInitialized = true;
+        }
+
+        // Converts between a real POL ID and the form the game client uses, with the crypt key of the game
+        // set with Init ("TM0" is TmKey). The key is an XOR, so the same call converts both ways. 0 (no ID)
+        // is left as is, as is any ID when Init was never called.
+        public static ulong CryptPolId(ulong polId)
+        {
+            if (!IsInitialized || polId == 0)
+                return polId;
+
+            uint gameCode = (uint)(GameCode[0] | GameCode[1] << 8 | GameCode[2] << 16);
+            return ChangeCryptKey(polId, gameCode);
         }
 
         public static ulong MjKey(ulong polId)

@@ -56,7 +56,7 @@ namespace Crystal.POLProfile
             NotifierId = polId;
             NotifierPassword = polPassword;
 
-            IrcClient = new PolIrcClient(NotifierId, NotifierPassword, IncomingMsgCallback);
+            IrcClient = new PolIrcClient("PolPro", NotifierId, NotifierPassword, IncomingMsgCallback);
             SenderThread = new Thread(new ThreadStart(SenderLoop));
         }
 

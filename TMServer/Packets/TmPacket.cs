@@ -19,6 +19,7 @@ along with Project Crystal Server. If not, see <https://www.gnu.org/licenses/>.
 ===========================================================================
 */
 
+using Crystal.Common.MiniGame;
 using Crystal.Common.MiniGame.Packets;
 using System;
 using System.Collections.Generic;
@@ -129,6 +130,7 @@ namespace Crystal.TetraMaster.Packets
                 return null;
             }
 
+            // POL ID, converted from the form the game client uses
             public bool GetParamId(string param, int index, out ulong result)
             {
                 result = 0;
@@ -141,7 +143,7 @@ namespace Crystal.TetraMaster.Packets
                     {
                         byteArray[7 - c++] = (byte)((GetHexVal(strVal[i << 1]) << 4) + GetHexVal(strVal[(i << 1) + 1]));
                     }
-                    result = BitConverter.ToUInt64(byteArray);
+                    result = Mg.CryptPolId(BitConverter.ToUInt64(byteArray));
                     return true;
                 }
                 return false;

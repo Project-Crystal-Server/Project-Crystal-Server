@@ -22,6 +22,7 @@ along with Project Crystal Server. If not, see <https://www.gnu.org/licenses/>.
 using Crystal.Common;
 using Crystal.Common.MiniGame;
 using Crystal.Common.MiniGame.Packets;
+using Crystal.Common.PolClient;
 using Crystal.Common.PolFileSystem;
 using Crystal.Mahjong.Models;
 using Crystal.Mahjong.Packets;
@@ -55,9 +56,9 @@ namespace Crystal.Mahjong
 
             Self = this;
             PolFileSys.Init(".\\profile_data");
-            BalancerChannel = new("Mj-Balancer", Mg.MjKey(MjConstants.POLID_BALANCER), OnReceiveMessage);
-            ProfileChannel = new("Mj-Profile", Mg.MjKey(MjConstants.POLID_PROFILE), OnReceiveMessageProfile);
-            RankChannel = new("Mj-Rank", Mg.MjKey(MjConstants.POLID_RANK), OnReceiveMessageRank);
+            BalancerChannel = new("Mj-Balancer", MjConstants.POLID_BALANCER, OnReceiveMessage);
+            ProfileChannel = new("Mj-Profile", MjConstants.POLID_PROFILE, OnReceiveMessageProfile);
+            RankChannel = new("Mj-Rank", MjConstants.POLID_RANK, OnReceiveMessageRank);
         }
 
         public void StartServer()
@@ -94,10 +95,10 @@ namespace Crystal.Mahjong
                 {
                     GetLnDvAck lnDvAck = new()
                     {
-                        ProfileChannelId = Mg.MjKey(MjConstants.POLID_PROFILE),
-                        RankChannelId = Mg.MjKey(MjConstants.POLID_RANK),
-                        LobbyChannelId = Mg.MjKey(MjConstants.POLID_BALANCER),
-                        LobbyEventChannelId = Mg.MjKey(MjConstants.POLID_BALANCER),
+                        ProfileChannelId = Mg.CryptPolId(MjConstants.POLID_PROFILE),
+                        RankChannelId = Mg.CryptPolId(MjConstants.POLID_RANK),
+                        LobbyChannelId = Mg.CryptPolId(MjConstants.POLID_BALANCER),
+                        LobbyEventChannelId = Mg.CryptPolId(MjConstants.POLID_BALANCER),
                         Version = 0x20020603,
                         LobbyVolume = 0,
                         LobbyDomain = 3
@@ -147,7 +148,7 @@ namespace Crystal.Mahjong
 
                     MjPacket responsePkt = new(
                         0,
-                        target: Mg.MjKey(SqCrypto.PolProDataToPolId(from, 0, 0)),
+                        target: Mg.CryptPolId(SqCrypto.PolProDataToPolId(from, 0, 0)),
                         command: MjConstants.Opcodes.EmISEVENTACK,
                         fifoChan: 6,
                         seq: gamePkt.Header.SequenceNum,

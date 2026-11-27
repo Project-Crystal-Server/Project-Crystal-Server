@@ -163,7 +163,7 @@ namespace Crystal.TetraMaster.TmGame
         {
             if (ComGame)
             {
-                string target = SqCrypto.PolIdToPolProData(Mg.TmKey(PlayerList[0].Id));
+                string target = SqCrypto.PolIdToPolProData(PlayerList[0].Id);
                 string vsComGameInit = new TmPacketBuilder(0x43, 0x02, 0x00)
                             .Command(new TmGameCommandBuilder("ComGameInit")
                             .Param("RA", 10)
@@ -180,7 +180,7 @@ namespace Crystal.TetraMaster.TmGame
             {
                 for (int i = 0; i < CurrentNumPlayers; i++)
                 {
-                    string target = SqCrypto.PolIdToPolProData(Mg.TmKey(PlayerList[i].Id));
+                    string target = SqCrypto.PolIdToPolProData(PlayerList[i].Id);
                     string vsGameInit = new TmPacketBuilder(0x43, 0x01, 0x00)
                                 .Command(new TmGameCommandBuilder("VsGameInit")
                                 .Param("N", CurrentNumPlayers)
@@ -207,7 +207,7 @@ namespace Crystal.TetraMaster.TmGame
 
             for (int i = 0; i < CurrentNumPlayers; i++)
             {
-                string target = SqCrypto.PolIdToPolProData(Mg.TmKey(PlayerList[i].Id));
+                string target = SqCrypto.PolIdToPolProData(PlayerList[i].Id);
                 string startGame = new TmPacketBuilder(0x43, 0x08, 0x00)
                             .Command(new TmGameCommandBuilder("StartData")
                             .Param("S", startingPlayer)
@@ -231,7 +231,7 @@ namespace Crystal.TetraMaster.TmGame
                     return -2;
 
                 PlayerList[CurrentNumPlayers++] = player;
-                PolId2Player[SqCrypto.PolIdToPolProData(Mg.TmKey(id))] = player;
+                PolId2Player[SqCrypto.PolIdToPolProData(id)] = player;
             }
 
             return 1;
@@ -276,7 +276,7 @@ namespace Crystal.TetraMaster.TmGame
             // Inform other players cards were selected
             for (int i = 0; i < CurrentNumPlayers; i++)
             {
-                string target = SqCrypto.PolIdToPolProData(Mg.TmKey(PlayerList[i].Id));
+                string target = SqCrypto.PolIdToPolProData(PlayerList[i].Id);
                 string cardSelectSend = new TmPacketBuilder(0x43, 0x07, 0x00)
                             .Command(new TmGameCommandBuilder("CardSelect")
                             .Param("Ans", PlayerList[0].CardSelectDone ? 1 : 0, PlayerList[1].CardSelectDone ? 1 : 0)
