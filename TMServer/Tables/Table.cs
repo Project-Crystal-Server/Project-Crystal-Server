@@ -467,7 +467,7 @@ namespace Crystal.TetraMaster.Tables
                 string target = SqCrypto.PolIdToPolProData(Members[i].Id);
                 string kickMsg = new TmPacketBuilder(0x41, 0x0C, 0x00)
                             .Command(new TmGameCommandBuilder("GameKick")
-                                .ParamId("Kick", kickedId)
+                                .Param("Kick", kickedId)
                                 .ParamHexStr("FN", masterName)
                                 .ParamHexStr("QN", kickedName)
                                 .End()
@@ -481,7 +481,7 @@ namespace Crystal.TetraMaster.Tables
             string target = SqCrypto.PolIdToPolProData(Members[0].Id);
             string gameOwnerMsg = new TmPacketBuilder(0x1A, 0x00, 0x00)
                         .Command(new TmGameCommandBuilder("GameOwner")
-                            .ParamId("NN", Members[0].Id)
+                            .Param("NN", Members[0].Id)
                             .ParamHexStr("CN", Members[0].Name)
                             .ParamHexStr("QN", oldMaster)
                             .End()
@@ -530,11 +530,11 @@ namespace Crystal.TetraMaster.Tables
             TmGameCommandBuilder gameMlCommand = new TmGameCommandBuilder("GameML");
 
             if (targetPlayerId != 0)
-                gameMlCommand.ParamId("ID", targetPlayerId);
+                gameMlCommand.Param("ID", targetPlayerId);
             gameMlCommand.Param("Num", NumMembers);
 
             string[] names = new string[NumMembers];
-            ulong[] ids = new ulong[NumMembers];
+            object[] ids = new object[NumMembers];
             object[] pos = new object[NumMembers];
             object[] lvs = new object[NumMembers];
             object[] rks = new object[NumMembers];
@@ -551,7 +551,7 @@ namespace Crystal.TetraMaster.Tables
             }
 
             gameMlCommand.ParamHexStr("MLNN", names)
-                         .ParamId("MLID", ids)
+                         .Param("MLID", ids)
                          .Param("Po", pos)
                          .Param("Lv", lvs)
                          .Param("Rk", rks)

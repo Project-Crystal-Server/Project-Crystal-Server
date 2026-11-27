@@ -71,7 +71,7 @@ namespace Crystal.TetraMaster
                             .Param("V", BALANCER_VOLUME)
                             .Param("AC", AUCTION_DOMAIN, AUCTION_VOLUME)
                             .Param("RK", RANK_DOMAIN, RANK_VOLUME)
-                            .Param("Shm", Mg.CryptPolId(SHOPMENU_POLID), SHOPMENU_DOMAIN, SHOPMENU_VOLUME)
+                            .Param("Shm", SHOPMENU_POLID, SHOPMENU_DOMAIN, SHOPMENU_VOLUME)
                             .End()
                         ).Build();
                     PolGameChannel.Notice(from, teachDVAns);

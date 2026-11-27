@@ -87,24 +87,17 @@ namespace Crystal.TetraMaster.Packets
                 // String
                 if (curVal is string)
                     StrSoFar += (string)curVal;
-                // ID
-                if (curVal is long || curVal is ulong)
-                    StrSoFar += string.Format("{0:X16}", (ulong)curVal);
+                // POL ID
+                if (curVal is long longVal)
+                    StrSoFar += string.Format("{0:X16}", Mg.CryptPolId((ulong)longVal));
+                if (curVal is ulong ulongVal)
+                    StrSoFar += string.Format("{0:X16}", Mg.CryptPolId(ulongVal));
                 // Byte Array
                 if (curVal is byte[])
                     StrSoFar += BitConverter.ToString((byte[])curVal).Replace("-", "");
             }
 
             return this;
-        }
-
-        // POL ID
-        public TmGameCommandBuilder ParamId(string name, params ulong[] polIds)
-        {
-            object[] values = new object[polIds.Length];
-            for (int i = 0; i < polIds.Length; i++)
-                values[i] = Mg.CryptPolId(polIds[i]);
-            return Param(name, values);
         }
 
         public TmGameCommandBuilder ParamHexStr(string name, params string[] value)
