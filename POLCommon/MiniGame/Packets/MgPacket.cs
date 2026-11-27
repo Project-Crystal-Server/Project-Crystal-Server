@@ -159,6 +159,7 @@ namespace Crystal.Common.MiniGame.Packets
             return null;
         }
 
+        // POL ID
         public bool GetParamId(int index, out ulong result)
         {
             result = 0;
@@ -174,7 +175,7 @@ namespace Crystal.Common.MiniGame.Packets
                 {
                     byteArray[c++] = (byte)((GetHexVal(strVal[i << 1]) << 4) + GetHexVal(strVal[(i << 1) + 1]));
                 }
-                result = BitConverter.ToUInt64(byteArray);
+                result = Mg.CryptPolId(BitConverter.ToUInt64(byteArray));
                 return true;
             }
             return false;

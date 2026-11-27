@@ -54,7 +54,7 @@ namespace Crystal.TetraMaster.Tables
                     using MySqlDataReader reader = cmd.ExecuteReader();
                     while (reader.Read())
                     {
-                        ulong charaId = Mg.TmKey(reader.GetUInt64("polId"));
+                        ulong charaId = reader.GetUInt64("polId");
                         string charaName = reader.GetString("characterName");
                         uint avgRank = reader.GetUInt32("avgRank");
                         uint money = reader.GetUInt32("money");

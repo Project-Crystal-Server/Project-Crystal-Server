@@ -19,12 +19,12 @@ along with Project Crystal Server. If not, see <https://www.gnu.org/licenses/>.
 ===========================================================================
 */
 
-using Crystal.POLAuth;
 using System;
 using System.Runtime.InteropServices;
 using Crystal.TetraMaster.Packets;
 using Crystal.Common.MiniGame;
 using Crystal.Common.MiniGame.Packets;
+using Crystal.Common.PolClient;
 using Crystal.Common.PolFileSystem;
 using Crystal.TetraMaster.Models;
 using static Crystal.TetraMaster.TmConstants;
@@ -38,34 +38,16 @@ namespace Crystal.TetraMaster
 
         public TmBalancerServer()
         {
-            PolGameChannel = new("Tm-Balancer", Mg.TmKey(TmConstants.BALANCER_POLID), OnReceiveMessage);
-            PolProfileChannel = new("Tm-Profile", Mg.TmKey(TmConstants.PROFILE_POLID), OnReceiveMessageProfile);
+            PolGameChannel = new("Tm-Balancer", TmConstants.BALANCER_POLID, OnReceiveMessage);
+            PolProfileChannel = new("Tm-Profile", TmConstants.PROFILE_POLID, OnReceiveMessageProfile);
         }
 
         public void StartServer()
         {
             Program.Log.Info("!!!Tetra Master Load Balancer is starting!!!");
             Program.Log.Info("Connecting notify interface client...");
-            PolGameChannel.Connect("127.0.0.1", MgConstants.MG_IRC_PORT);
-            PolProfileChannel.Connect("127.0.0.1", MgConstants.MG_IRC_PORT);
-
-            while (!PolGameChannel.IsAuthenticated())
-            {
-                if (PolGameChannel.AuthenticationFailed())
-                {
-                    Program.Log.Error("The game irc client could not connect to the auth server. Check settings!!!");
-                    Environment.Exit(1);
-                }
-            }
-
-            while (!PolProfileChannel.IsAuthenticated())
-            {
-                if (PolProfileChannel.AuthenticationFailed())
-                {
-                    Program.Log.Error("The profile irc client could not connect to the auth server. Check settings!!!");
-                    Environment.Exit(1);
-                }
-            }
+            PolGameChannel.ConnectAndAuthenticate("127.0.0.1", MgConstants.MG_IRC_PORT);
+            PolProfileChannel.ConnectAndAuthenticate("127.0.0.1", MgConstants.MG_IRC_PORT);
         }
 
         private void OnReceiveMessage(string from, string data)
@@ -89,7 +71,7 @@ namespace Crystal.TetraMaster
                             .Param("V", BALANCER_VOLUME)
                             .Param("AC", AUCTION_DOMAIN, AUCTION_VOLUME)
                             .Param("RK", RANK_DOMAIN, RANK_VOLUME)
-                            .Param("Shm", Mg.TmKey(SHOPMENU_POLID), SHOPMENU_DOMAIN, SHOPMENU_VOLUME)
+                            .Param("Shm", SHOPMENU_POLID, SHOPMENU_DOMAIN, SHOPMENU_VOLUME)
                             .End()
                         ).Build();
                     PolGameChannel.Notice(from, teachDVAns);

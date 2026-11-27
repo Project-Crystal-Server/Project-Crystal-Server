@@ -8,9 +8,10 @@ set "OUT=%~dp0Build\Publish-Windows-Debug"
 call :publish POLAuth polauth || goto :failed
 call :publish POLProfile polprofile || goto :failed
 call :publish POLPatch polpatch || goto :failed
+call :publish TMServer tmserver || goto :failed
 
 echo.
-echo All three servers published (Debug) to %OUT%
+echo All servers published (Debug) to %OUT%
 exit /b 0
 
 :publish

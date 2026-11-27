@@ -79,11 +79,11 @@ namespace Crystal.Common.MiniGame.Packets
                 // String
                 if (curVal is string)
                     StrPacket += ((string)curVal).Replace("\0", "");
-                // ID
+                // POL ID
                 if (curVal is long)
-                    StrPacket += string.Format("0x{0:X16}", (ulong)(long)curVal);
+                    StrPacket += string.Format("0x{0:X16}", Mg.CryptPolId((ulong)(long)curVal));
                 if (curVal is ulong)
-                    StrPacket += string.Format("0x{0:X16}", (ulong)curVal);
+                    StrPacket += string.Format("0x{0:X16}", Mg.CryptPolId((ulong)curVal));
                 // Byte Array
                 if (curVal is byte[])
                     StrPacket += BitConverter.ToString((byte[])curVal).Replace("-", "");

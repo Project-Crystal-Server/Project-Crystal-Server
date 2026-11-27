@@ -123,6 +123,7 @@ namespace Crystal.POLAuth
             AuthServer server = new(
                 ip: config.ServerIp ?? "0.0.0.0",
                 name: config.ServerName ?? "pol-0000-00000.pol.com",
+                isMinigameServer: config.IsMinigameServer,
                 polProId: config.PolProNotiferId,
                 polProPassword: config.PolProNotiferPassword,
                 polProIpAddress: config.PolProNotiferIp
@@ -176,7 +177,9 @@ namespace Crystal.POLAuth
     public class AuthServerWorker : BackgroundService
     {
         public const string COMM_PIPE = "polauth.comm";
+        public const string MG_COMM_PIPE = "polauth-mg.comm";
         private readonly AuthServer Server;
+        private string PipeName => Server.IsMinigameServer ? MG_COMM_PIPE : COMM_PIPE;
         private readonly IHostApplicationLifetime Lifetime;
 
         public AuthServerWorker(AuthServer server, IHostApplicationLifetime lifetime)
@@ -191,7 +194,7 @@ namespace Crystal.POLAuth
             // Start server
             try
             {
-                Server.StartServer(isMainPolAuth: true);
+                Server.StartServer();
                 Console.ForegroundColor = ConsoleColor.DarkGreen;
                 Program.Log.Info($"Authentication Server has started @ {Server.ServerIp}:{Server.ServerPort}");
                 Console.ForegroundColor = ConsoleColor.Gray;
@@ -299,7 +302,7 @@ namespace Crystal.POLAuth
                 try
                 {
                     using var pipeServer = new NamedPipeServerStream(
-                        COMM_PIPE,
+                        PipeName,
                         PipeDirection.InOut,
                         1,
                         PipeTransmissionMode.Byte,
@@ -310,7 +313,7 @@ namespace Crystal.POLAuth
                     // Fix access rights issues when process runs under system service privileges
                     if (OperatingSystem.IsLinux())
                     {
-                        string expectedPath = $"/tmp/CoreFXPipe_{COMM_PIPE}";
+                        string expectedPath = $"/tmp/CoreFXPipe_{PipeName}";
                         if (File.Exists(expectedPath))
                         {
                             File.SetUnixFileMode(expectedPath, UnixFileMode.UserRead | UnixFileMode.UserWrite |

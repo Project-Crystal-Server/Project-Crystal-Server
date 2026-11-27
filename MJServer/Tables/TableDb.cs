@@ -20,6 +20,7 @@ along with Project Crystal Server. If not, see <https://www.gnu.org/licenses/>.
 */
 
 using System;
+using Crystal.Common.MiniGame;
 using MySqlConnector;
 
 namespace Crystal.Mahjong.Tables
@@ -52,7 +53,7 @@ namespace Crystal.Mahjong.Tables
                     using MySqlDataReader reader = cmd.ExecuteReader();
                     while (reader.Read())
                     {
-                        ulong charaId = Mg.MjKey(reader.GetUInt64("polId"));
+                        ulong charaId = reader.GetUInt64("polId");
                         string charaName = reader.GetString("characterName");
                         uint avgRank = reader.GetUInt32("avgRank");
                         uint money = reader.GetUInt32("money");

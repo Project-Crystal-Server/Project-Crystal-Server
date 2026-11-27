@@ -21,9 +21,10 @@ along with Project Crystal Server. If not, see <https://www.gnu.org/licenses/>.
 
 using Crystal.Common.MiniGame;
 using Crystal.Common.PolFileSystem;
-using Crystal.POLAuth;
 using NLog;
 using System;
+using System.IO;
+using System.Text;
 using System.Threading;
 
 namespace Crystal.TetraMaster
@@ -32,32 +33,39 @@ namespace Crystal.TetraMaster
     {
         public static readonly Logger Log = LogManager.GetCurrentClassLogger();
 
-        private static AuthServer MgServer;
         private static TmBalancerServer BalancerServer;
         private static TmShopMenuServer ShopMenuServer;
 
         static void Main(string[] args)
         {
+            // Setup Base DIR
+            string baseDir = Path.GetDirectoryName(Environment.ProcessPath) ?? AppContext.BaseDirectory;
+            Directory.SetCurrentDirectory(baseDir);
+            Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
+
+            // Load NLog Config
+            using var nlogStream = typeof(Program).Assembly.GetManifestResourceStream("Crystal.TetraMaster.NLog.config");
+            using var nlogReader = new StreamReader(nlogStream);
+            LogManager.Configuration = new NLog.Config.XmlLoggingConfiguration(nlogReader, null);
+
             Log.Info("===================");
             Log.Info("Tetra Master Server");
             Log.Info("===================");
 
             Mg.Init("TM0");
-            PolFileSys.Init("D:\\Coding\\project-crystal-server\\Build\\POLProfile\\Debug\\profile_data");
+
+            // Config Load
+            TetraMasterConfig config = LoadConfig(args);
+            if (config == null)
+                return;
+            PolFileSys.Init(config.ProfileDir);
 
             // Args
-            ProcessArgs(args, out bool startMgIrc, out bool startBalancer, out bool startShopMenuServer);
+            ProcessArgs(args, out bool startBalancer, out bool startShopMenuServer);
 
-            startMgIrc = startBalancer = startShopMenuServer = true;
+            startBalancer = startShopMenuServer = true;
 
-            // Start the servers
-            if (startMgIrc)
-            {
-                Log.Info("Starting POL Auth server for MiniGame...");
-                MgServer = new("69.254.56.86", MgConstants.MG_IRC_PORT, "pol-1048-51241.pol.com", "", "", "");
-                MgServer.StartServer(false);
-            }
-
+            // Start the servers. Requires a POLAuth instance running in minigame mode.
             if (startBalancer)
             {
                 BalancerServer = new TmBalancerServer();
@@ -66,7 +74,7 @@ namespace Crystal.TetraMaster
 
             if (startShopMenuServer)
             {
-                ShopMenuServer = new TmShopMenuServer(Mg.TmKey(TmConstants.SHOPMENU_POLID), TmConstants.SHOPMENU_DOMAIN, TmConstants.SHOPMENU_VOLUME);
+                ShopMenuServer = new TmShopMenuServer(TmConstants.SHOPMENU_POLID, TmConstants.SHOPMENU_DOMAIN, TmConstants.SHOPMENU_VOLUME);
                 ShopMenuServer.StartServer();
             }
 
@@ -85,22 +93,57 @@ namespace Crystal.TetraMaster
             }
         }
 
-        private static void ProcessArgs(string[] args, out bool startMgIrc, out bool startBalancer, out bool startShopMenuServer)
+        static TetraMasterConfig LoadConfig(string[] args)
+        {
+            // Get path if exists
+            string cfgPath = "./tm.cfg";
+            for (int i = 0; i < args.Length; i++)
+            {
+                if (args[i].ToLower().Equals("--config") && args.Length > i + 1)
+                {
+                    cfgPath = args[i + 1];
+                    break; 
+                }
+            }
+
+            // Load and perform checks for mandatory fields
+            TetraMasterConfig config;
+            try
+            {
+                config = new(cfgPath);
+            }
+            catch (Exception e)
+            {
+                Console.ForegroundColor = ConsoleColor.Red;
+                Log.Error($"Could not load the config: {e.Message}");
+                Console.ForegroundColor = ConsoleColor.Gray;
+                return null;
+            }
+
+            if (config.ProfileDir == null)
+            {
+                Console.ForegroundColor = ConsoleColor.Red;
+                Log.Error("Config: Profile directory was not set.");
+                Console.ForegroundColor = ConsoleColor.Gray;
+                return null;
+            }
+
+            return config;
+        }
+
+        private static void ProcessArgs(string[] args, out bool startBalancer, out bool startShopMenuServer)
         {
             // Default
             if (args.Length == 0)
-                startMgIrc = startBalancer = startShopMenuServer = true;
+                startBalancer = startShopMenuServer = true;
             else
-                startMgIrc = startBalancer = startShopMenuServer = false;
+                startBalancer = startShopMenuServer = false;
 
             // Find args
             for (int i = 0; i < args.Length; i++)
             {
                 switch (args[i])
                 {
-                    case "--mgirc":
-                        startMgIrc = true;
-                        break;
                     case "--balancer":
                         startBalancer = true;
                         break;

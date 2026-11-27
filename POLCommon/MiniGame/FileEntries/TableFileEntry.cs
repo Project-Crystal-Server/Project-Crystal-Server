@@ -86,7 +86,7 @@ namespace Crystal.Common.MiniGame.PolFileSystem.FileEntries
         {
             return new()
             {
-                Id = table.Id,
+                Id = Mg.CryptPolId(table.Id),
                 Unk0 = table.Unk1,
                 NumMembers = table.NumMembers,
                 IsValidUnk = table.IsValidUnk,

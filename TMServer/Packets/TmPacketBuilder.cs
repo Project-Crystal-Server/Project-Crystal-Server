@@ -19,6 +19,7 @@ along with Project Crystal Server. If not, see <https://www.gnu.org/licenses/>.
 ===========================================================================
 */
 
+using Crystal.Common.MiniGame;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -86,9 +87,11 @@ namespace Crystal.TetraMaster.Packets
                 // String
                 if (curVal is string)
                     StrSoFar += (string)curVal;
-                // ID
-                if (curVal is long || curVal is ulong)
-                    StrSoFar += string.Format("{0:X16}", (ulong)curVal);
+                // POL ID
+                if (curVal is long longVal)
+                    StrSoFar += string.Format("{0:X16}", Mg.CryptPolId((ulong)longVal));
+                if (curVal is ulong ulongVal)
+                    StrSoFar += string.Format("{0:X16}", Mg.CryptPolId(ulongVal));
                 // Byte Array
                 if (curVal is byte[])
                     StrSoFar += BitConverter.ToString((byte[])curVal).Replace("-", "");

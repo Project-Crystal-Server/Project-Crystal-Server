@@ -66,7 +66,7 @@ namespace Crystal.TetraMaster
                         {
                             FileVersion = GameDataFile.FileVersion,
                             GameId = reader.GetUInt32("gameId"),
-                            PolId = Mg.TmKey(polId),
+                            PolId = Mg.CryptPolId(polId),
                             CharaName = reader.GetString("characterName"),
                             HandleId = reader.GetUInt64("linkedHandleId")
                         };

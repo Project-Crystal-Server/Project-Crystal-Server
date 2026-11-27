@@ -90,8 +90,8 @@ namespace Crystal.Common.MiniGame.PolFileSystem.FileEntries
         {
             return new()
             {
-                Id = player.Id,
-                RoomId = player.RoomId,
+                Id = Mg.CryptPolId(player.Id),
+                RoomId = Mg.CryptPolId(player.RoomId),
                 Time = player.EnterTime,
                 GameId = (uint)player.GameId,
                 Level = (uint)player.Level,

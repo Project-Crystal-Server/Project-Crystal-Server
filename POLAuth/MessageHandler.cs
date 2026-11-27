@@ -273,7 +273,8 @@ namespace Crystal.POLAuth
                     Server.IrcChannels.Add(channelName, channel);
                     channel.Modes.Add(client, 'o', client.GetNick());
                     channel.Join(client, key);
-                    Database.CreateChatroom(channelName);
+                    if (!Server.IsMinigameServer)
+                        Database.CreateChatroom(channelName);
                 }
             }            
 

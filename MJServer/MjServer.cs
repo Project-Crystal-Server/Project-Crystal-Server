@@ -22,6 +22,7 @@ along with Project Crystal Server. If not, see <https://www.gnu.org/licenses/>.
 using Crystal.Common;
 using Crystal.Common.MiniGame;
 using Crystal.Common.MiniGame.Packets;
+using Crystal.Common.PolClient;
 using Crystal.Common.PolFileSystem;
 using Crystal.Mahjong.Models;
 using Crystal.Mahjong.Packets;
@@ -34,11 +35,10 @@ namespace Crystal.Mahjong
 {
     public class MjServer
     {
-        public const int JANG_IRC_PORT = 51241;
+        public const int JANG_IRC_PORT = MgConstants.MG_IRC_PORT;
 
         private static MjServer Self;
 
-        readonly POLAuth.AuthServer PolIrcServer = new("192.168.0.147", JANG_IRC_PORT, "pol-1048-51241.pol.com");
         readonly PolIrcClient BalancerChannel;
         readonly PolIrcClient RankChannel;
         readonly PolIrcClient ProfileChannel;
@@ -56,47 +56,18 @@ namespace Crystal.Mahjong
 
             Self = this;
             PolFileSys.Init(".\\profile_data");
-            BalancerChannel = new("Mj-Balancer", Mg.MjKey(MjConstants.POLID_BALANCER), OnReceiveMessage);
-            ProfileChannel = new("Mj-Profile", Mg.MjKey(MjConstants.POLID_PROFILE), OnReceiveMessageProfile);
-            RankChannel = new("Mj-Rank", Mg.MjKey(MjConstants.POLID_RANK), OnReceiveMessageRank);
+            BalancerChannel = new("Mj-Balancer", MjConstants.POLID_BALANCER, OnReceiveMessage);
+            ProfileChannel = new("Mj-Profile", MjConstants.POLID_PROFILE, OnReceiveMessageProfile);
+            RankChannel = new("Mj-Rank", MjConstants.POLID_RANK, OnReceiveMessageRank);
         }
 
         public void StartServer()
         {
-            Program.Log.Info("Starting POL Auth server for MiniGame...");
-            PolIrcServer.StartServer(false);
+            // Requires a POLAuth instance running in minigame mode.
             Program.Log.Info("Connecting notify interface client...");
-            BalancerChannel.Connect("127.0.0.1", JANG_IRC_PORT);
-            ProfileChannel.Connect("127.0.0.1", JANG_IRC_PORT);
-            RankChannel.Connect("127.0.0.1", JANG_IRC_PORT);
-
-            // Open Game Channel
-            while (!BalancerChannel.IsAuthenticated())
-            {
-                if (BalancerChannel.AuthenticationFailed())
-                {
-                    Program.Log.Error("The balancer irc client could not connect to the auth server. Check settings!!!");
-                    Environment.Exit(1);
-                }
-            }
-
-            while (!ProfileChannel.IsAuthenticated())
-            {
-                if (ProfileChannel.AuthenticationFailed())
-                {
-                    Program.Log.Error("The profile irc client could not connect to the auth server. Check settings!!!");
-                    Environment.Exit(1);
-                }
-            }
-
-            while (!RankChannel.IsAuthenticated())
-            {
-                if (RankChannel.AuthenticationFailed())
-                {
-                    Program.Log.Error("The test irc client could not connect to the auth server. Check settings!!!");
-                    Environment.Exit(1);
-                }
-            }
+            BalancerChannel.ConnectAndAuthenticate("127.0.0.1", JANG_IRC_PORT);
+            ProfileChannel.ConnectAndAuthenticate("127.0.0.1", JANG_IRC_PORT);
+            RankChannel.ConnectAndAuthenticate("127.0.0.1", JANG_IRC_PORT);
 
             // Load Zones
             ZoneFile = PolFileSys.OpenFile(MjConstants.POLID_BALANCER, 0, 3, "b/g/ZL", MgConstants.MAX_ZONES, MgConstants.ZONE_SIZE, MgConstants.ZONE_DATA_OFFSET, MgConstants.ZONE_COUNT_OFFSET);
@@ -124,10 +95,10 @@ namespace Crystal.Mahjong
                 {
                     GetLnDvAck lnDvAck = new()
                     {
-                        ProfileChannelId = Mg.MjKey(MjConstants.POLID_PROFILE),
-                        RankChannelId = Mg.MjKey(MjConstants.POLID_RANK),
-                        LobbyChannelId = Mg.MjKey(MjConstants.POLID_BALANCER),
-                        LobbyEventChannelId = Mg.MjKey(MjConstants.POLID_BALANCER),
+                        ProfileChannelId = Mg.CryptPolId(MjConstants.POLID_PROFILE),
+                        RankChannelId = Mg.CryptPolId(MjConstants.POLID_RANK),
+                        LobbyChannelId = Mg.CryptPolId(MjConstants.POLID_BALANCER),
+                        LobbyEventChannelId = Mg.CryptPolId(MjConstants.POLID_BALANCER),
                         Version = 0x20020603,
                         LobbyVolume = 0,
                         LobbyDomain = 3
@@ -177,7 +148,7 @@ namespace Crystal.Mahjong
 
                     MjPacket responsePkt = new(
                         0,
-                        target: Mg.MjKey(SqCrypto.PolProDataToPolId(from, 0, 0)),
+                        target: Mg.CryptPolId(SqCrypto.PolProDataToPolId(from, 0, 0)),
                         command: MjConstants.Opcodes.EmISEVENTACK,
                         fifoChan: 6,
                         seq: gamePkt.Header.SequenceNum,
@@ -275,7 +246,6 @@ namespace Crystal.Mahjong
         public void SendLineToAll(string v)
         {
             BalancerChannel.Notice("WXYZ1234", v);
-            PolIrcServer.SendLineToAll(v);
         }
 
         public static MjServer Get()

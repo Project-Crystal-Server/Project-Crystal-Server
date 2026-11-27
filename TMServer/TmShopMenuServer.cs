@@ -26,6 +26,7 @@ using static Crystal.TetraMaster.Packets.TmPacket;
 using Crystal.Common.MiniGame;
 using Crystal.Common.MiniGame.Packets;
 using Crystal.TetraMaster.Models;
+using Crystal.Common.PolClient;
 using Crystal.Common.PolFileSystem;
 using System.Collections.Generic;
 
@@ -62,14 +63,7 @@ namespace Crystal.TetraMaster
                 zone.Init();
 
             // Open Game Channel
-            PolShopMenuChannel.Connect("127.0.0.1", 51241);
-            while (!PolShopMenuChannel.IsAuthenticated())
-            {
-                if (PolShopMenuChannel.AuthenticationFailed())
-                {
-                    return false;
-                }
-            }
+            PolShopMenuChannel.ConnectAndAuthenticate("127.0.0.1", MgConstants.MG_IRC_PORT);
             return true;
         }
 
@@ -98,8 +92,6 @@ namespace Crystal.TetraMaster
                     init.GetParamNumber("L", 0, out int language);
                     init.GetParamNumber("GLD", 0, out int guild);
 
-                    playerPolId = Mg.TmKey(playerPolId);
-
                     // Write the gamedatafile
                     // Gotta shim this here:
                     // Load player from DB and refresh the player data file. This would normally happen somewhere else.
@@ -124,7 +116,6 @@ namespace Crystal.TetraMaster
                     // Read in options and save to db
                     TmGameCommand optCommand = packet.GetCommand("Opt");
                     optCommand.GetParamId("NN", 0, out ulong playerPolId);
-                    playerPolId = Mg.TmKey(playerPolId);
 
                     optCommand.GetParamNumber("HID", 0, out int hid);
                     optCommand.GetParamNumber("Dm", 0, out int domain);
@@ -165,7 +156,6 @@ namespace Crystal.TetraMaster
                     // Read in options and save to db
                     TmGameCommand optCommand = packet.GetCommand("ShReq");
                     optCommand.GetParamId("NN", 0, out ulong playerPolId);
-                    playerPolId = Mg.TmKey(playerPolId);
 
                     optCommand.GetParamNumber("HID", 0, out int hid);
                     optCommand.GetParamNumber("Dm", 0, out int domain);

@@ -41,6 +41,7 @@
   <ItemGroup>
     <EmbeddedResource Include="NLog.config" />
     <Content Include="polauth.cfg" CopyToPublishDirectory="Always" ExcludeFromSingleFile="true" />
+    <Content Include="polauth-mg.cfg" CopyToPublishDirectory="Always" ExcludeFromSingleFile="true" />
   </ItemGroup>
 
   <ItemGroup>

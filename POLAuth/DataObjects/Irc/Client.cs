@@ -99,17 +99,22 @@ namespace Crystal.POLAuth.DataObjects.Irc
             {
                 Server.SetNotifyClient(null);
                 Program.Log.Info($"PolPro Notifier {GetPolID()} has disconnected.");
-                Database.DeleteAccountSession(this);
+                if (!Server.IsMinigameServer)
+                    Database.DeleteAccountSession(this);
                 ShutdownSocket();
                 return;
             }
 
-            //Delete session
-            Database.DeleteAccountSession(this);
+            // Sessions and friend notifications belong to the main POL server only
+            if (!Server.IsMinigameServer)
+            {
+                //Delete session
+                Database.DeleteAccountSession(this);
 
-            //Notify friends they are going offline
-            if (!replacingSession)
-                NotifyOffline();
+                //Notify friends they are going offline
+                if (!replacingSession)
+                    NotifyOffline();
+            }
 
             ShutdownSocket();
         }
@@ -146,7 +151,9 @@ namespace Crystal.POLAuth.DataObjects.Irc
             Program.Log.Info($"{this} is initializing...");
 
             LoginTime = Utils.UnixTimeStampUTC();
-            InitData initInfo = new(LoginTime, Server.ServerIp, AuthServer.AUTHENTICATION_PORT, ClientIp.ToString(), ClientPort);
+            // Server port set to 0. On retail the port seems to redirect to
+            // the old minigame server port, but don't actually need to redirect.
+            InitData initInfo = new(LoginTime, Server.ServerIp, 0, ClientIp.ToString(), ClientPort);
             InitInfoBase32 = initInfo.GetBase32();
             SendLine($":{Server.ServerName} 300 * {InitInfoBase32}", false);
         }
@@ -190,7 +197,8 @@ namespace Crystal.POLAuth.DataObjects.Irc
                 Client sameSessionClient = Server.CheckForSameSession(this);
                 if (sameSessionClient != null)
                     sameSessionClient.KickSameSession();
-                Database.CreateAccountSession(this);
+                if (!Server.IsMinigameServer)
+                    Database.CreateAccountSession(this);
 
                 IrcReplies.ReplyWelcome(this, Server.ServerName, "Gucci");
                 IsBot = true;
@@ -227,7 +235,8 @@ namespace Crystal.POLAuth.DataObjects.Irc
                     Client sameSessionClient = Server.CheckForSameSession(this);
                     if (sameSessionClient != null)
                         sameSessionClient.KickSameSession();
-                    Database.CreateAccountSession(this);
+                    if (!Server.IsMinigameServer)
+                        Database.CreateAccountSession(this);
 
                     AdminData adminData = new()
                     {

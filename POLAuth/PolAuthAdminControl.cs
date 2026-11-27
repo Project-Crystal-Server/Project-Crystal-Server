@@ -58,8 +58,8 @@ namespace Crystal.POLAuth
             }
 
             // Connect to auth server so we got authentication
-            PolIrcClient authClient = new("POLA0001", "botbotbot");
-            authClient.Connect("127.0.0.1", AuthServer.AUTHENTICATION_PORT);
+            PolIrcClient authClient = new("PolAuthAdmin", "POLA0001", "botbotbot");
+            authClient.Connect("127.0.0.1", AuthServer.POLIRC_PORT);
             if (!authClient.WaitAuthentication(3000))
                 return AdminControlResult.GenericFailure;
 

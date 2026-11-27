@@ -27,6 +27,7 @@ using System.Runtime.InteropServices;
 using Crystal.Common.MiniGame;
 using Crystal.Common.MiniGame.Packets;
 using Crystal.Common.MiniGame.PolFileSystem.FileEntries;
+using Crystal.Common.PolClient;
 using Crystal.Common.PolFileSystem;
 using static Crystal.Mahjong.MjConstants;
 using Crystal.Mahjong.Packets;
@@ -83,7 +84,7 @@ namespace Crystal.Mahjong.Models
         public Room(Zone parentZone, byte domain, ushort volume, ulong roomId, string roomName, int maxTables, int maxPlayers)
         {
             // Setup Room
-            Id = Mg.MjKey(SqCrypto.PolProDataToPolId($"MJ{roomId:D4}00", 0, 3));
+            Id = SqCrypto.PolProDataToPolId($"MJ{roomId:D4}00", 0, 3);
             Domain = domain;
             Volume = volume;
 
@@ -209,7 +210,7 @@ namespace Crystal.Mahjong.Models
             RoomListFile = PolFileSys.OpenFile(POLID_BALANCER, 0, 3, $"b/g/RL{FileIndex:D3}", MgConstants.MAX_ROOMS, MgConstants.ROOM_SIZE, MgConstants.ROOM_DATA_OFFSET, MgConstants.ROOM_COUNT_OFFSET);
             RoomFileEntry roomEntry = new()
             {
-                Id = Id,
+                Id = Mg.CryptPolId(Id),
                 NumPlayers = 0,
                 NumPlayers2 = 0,
                 NumClosedTables = 0,
@@ -224,8 +225,8 @@ namespace Crystal.Mahjong.Models
 
             // Init the PTL file that stores Player + Table data. File is access is split across these two
             // file pointers.
-            PlayerFile = PolFileSys.OpenFile(Mg.MjKey(Id), Volume, Domain, "b/g/PTL", MgConstants.MAX_PLAYERS, MgConstants.PLAYER_SIZE, MgConstants.PLAYER_DATA_OFFSET, MgConstants.PLAYER_COUNT_OFFSET);
-            TableFile = PolFileSys.OpenFile(Mg.MjKey(Id), Volume, Domain, "b/g/PTL", MgConstants.MAX_TABLES, MgConstants.TABLE_SIZE, MgConstants.TABLE_DATA_OFFSET, MgConstants.TABLE_COUNT_OFFSET);
+            PlayerFile = PolFileSys.OpenFile(Id, Volume, Domain, "b/g/PTL", MgConstants.MAX_PLAYERS, MgConstants.PLAYER_SIZE, MgConstants.PLAYER_DATA_OFFSET, MgConstants.PLAYER_COUNT_OFFSET);
+            TableFile = PolFileSys.OpenFile(Id, Volume, Domain, "b/g/PTL", MgConstants.MAX_TABLES, MgConstants.TABLE_SIZE, MgConstants.TABLE_DATA_OFFSET, MgConstants.TABLE_COUNT_OFFSET);
             PlayerFile.InitFile(0xC050);
 
             // Write all the tables into the PTL file
@@ -238,7 +239,7 @@ namespace Crystal.Mahjong.Models
             }
 
             // Write the updBuff start val
-            PolFile file = PolFileSys.OpenFileDirect(Mg.MjKey(Id), Volume, Domain, "b/g/PTL", out object fileLock);
+            PolFile file = PolFileSys.OpenFileDirect(Id, Volume, Domain, "b/g/PTL", out object fileLock);
             lock (fileLock)
             {
                 var fileStream = file.GetDirectFileStream();
@@ -249,8 +250,7 @@ namespace Crystal.Mahjong.Models
             PolFileSys.CloseFile(file);
 
             // Start IRC Client
-            IrcClient.Connect("127.0.0.1", MgConstants.MG_IRC_PORT);
-            while (!IrcClient.IsAuthenticated()) ;
+            IrcClient.ConnectAndAuthenticate("127.0.0.1", MgConstants.MG_IRC_PORT);
             
             for (int i = 0; i < Tables.Length; i++)
                 Tables[i].Init();
@@ -320,7 +320,7 @@ namespace Crystal.Mahjong.Models
 
                 lock (PtlLock)
                 { 
-                    PolFile file = PolFileSys.OpenFileDirect(Mg.MjKey(Id), Volume, Domain, "b/g/PTL", out object fileLock);
+                    PolFile file = PolFileSys.OpenFileDirect(Id, Volume, Domain, "b/g/PTL", out object fileLock);
 
                     lock (fileLock)
                     {
@@ -342,7 +342,7 @@ namespace Crystal.Mahjong.Models
             // Update this room's file entry
             RoomFileEntry roomEntry = new()
             {
-                Id = Id,
+                Id = Mg.CryptPolId(Id),
                 NumPlayers = (uint)NumPlayers,
                 NumPlayers2 = 0,
                 NumClosedTables = (uint)NumClosedTables,

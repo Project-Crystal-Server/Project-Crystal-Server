@@ -22,6 +22,7 @@ along with Project Crystal Server. If not, see <https://www.gnu.org/licenses/>.
 using Crystal.Common;
 using Crystal.Common.MiniGame;
 using Crystal.Common.MiniGame.Packets;
+using Crystal.Common.PolClient;
 using Crystal.Mahjong.Packets;
 using Org.BouncyCastle.Asn1.IsisMtt.X509;
 using System.ComponentModel.Design;
@@ -57,19 +58,16 @@ namespace Crystal.Mahjong.Tables
 
         public ulong CreateTableId(ulong roomId, uint tableNumber)
         {
-            ulong roomIdDecrypted = Mg.MjKey(roomId);
-            char[] polIdData = SqCrypto.PolIdToPolProData(roomIdDecrypted).ToCharArray();
+            char[] polIdData = SqCrypto.PolIdToPolProData(roomId).ToCharArray();
             char[] hex = (tableNumber + 1).ToString("X2").ToCharArray();
             polIdData[6] = hex[0];
             polIdData[7] = hex[1];
-            ulong tableId = SqCrypto.PolProDataToPolId(new(polIdData), 0, 0);
-            return Mg.MjKey(tableId);
+            return SqCrypto.PolProDataToPolId(new(polIdData), 0, 0);
         }
 
         public string CreateIrcChannel(ulong tableId)
         {
-            ulong tableIdDecrypted = Mg.MjKey(tableId);
-            string strPolData = SqCrypto.PolIdToPolProData(tableIdDecrypted);
+            string strPolData = SqCrypto.PolIdToPolProData(tableId);
             return $"#TABLE{strPolData.Substring(2)}";
         }
 
@@ -80,7 +78,7 @@ namespace Crystal.Mahjong.Tables
             IrcChannel = CreateIrcChannel(Id);
             TableLobbyChannel = new PolIrcClient($"Tm-Table-{Number}", Id, OnReceiveMsg);
 
-            ParentRoomIrcId = SqCrypto.PolIdToPolProData(Mg.MjKey(roomId));
+            ParentRoomIrcId = SqCrypto.PolIdToPolProData(roomId);
 
             ResetTable();
             UpdateTable();
@@ -137,7 +135,7 @@ namespace Crystal.Mahjong.Tables
 
             UpdateGameDataBuffer();
             SendMemberListToTable();
-            if (TableLobbyChannel.IsReady())
+            if (TableLobbyChannel.IsCryptoReady())
                 SendUpdateMsgToRoom();
         }
 
