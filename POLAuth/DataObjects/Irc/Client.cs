@@ -153,7 +153,7 @@ namespace Crystal.POLAuth.DataObjects.Irc
             LoginTime = Utils.UnixTimeStampUTC();
             // Server port set to 0. On retail the port seems to redirect to
             // the old minigame server port, but don't actually need to redirect.
-            InitData initInfo = new(LoginTime, Server.ServerIp, 0, ClientIp.ToString(), ClientPort);
+            InitData initInfo = new(LoginTime, "0.0.0.0", AuthServer.POLIRC_PORT, ClientIp.ToString(), ClientPort);
             InitInfoBase32 = initInfo.GetBase32();
             SendLine($":{Server.ServerName} 300 * {InitInfoBase32}", false);
         }
